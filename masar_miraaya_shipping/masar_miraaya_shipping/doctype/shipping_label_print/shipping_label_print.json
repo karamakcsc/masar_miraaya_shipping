@@ -1,0 +1,194 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-12-11 14:29:21.705737",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "filters_section",
+  "delivery_date",
+  "delivery_time",
+  "column_break_ornx",
+  "governorate",
+  "order_status",
+  "section_break_njbd",
+  "delivery_method",
+  "column_break_jdrr",
+  "delivery_zone",
+  "section_break_vpnu",
+  "print_status",
+  "column_break_bufb",
+  "printed_by",
+  "section_break_hrud",
+  "orders",
+  "total_orders",
+  "section_break_gund",
+  "amended_from",
+  "column_break_puky",
+  "naming_series"
+ ],
+ "fields": [
+  {
+   "fieldname": "filters_section",
+   "fieldtype": "Section Break",
+   "label": "Filters"
+  },
+  {
+   "default": "Today",
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Delivery Date",
+   "reqd": 1
+  },
+  {
+   "default": "10:00:00",
+   "fieldname": "delivery_time",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Delivery Time",
+   "options": "\n10:00:00\n16:00:00",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ornx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "governorate",
+   "fieldtype": "Link",
+   "label": "Governorate",
+   "options": "Governorate",
+   "reqd": 1
+  },
+  {
+   "fieldname": "order_status",
+   "fieldtype": "Select",
+   "label": "Order Status",
+   "options": "Confirmed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_njbd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "delivery_method",
+   "fieldtype": "Select",
+   "label": "Delivery Method",
+   "options": "\nIn-House\nOutsourced"
+  },
+  {
+   "fieldname": "column_break_jdrr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "delivery_zone",
+   "fieldtype": "Link",
+   "label": "Delivery Zone",
+   "link_filters": "[[\"Delivery Zone\",\"is_enabled\",\"=\",1]]",
+   "options": "Delivery Zone"
+  },
+  {
+   "fieldname": "section_break_vpnu",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "print_status",
+   "fieldtype": "Select",
+   "label": "Print Status",
+   "options": "\nDraft\nPrinted\nReprinted\nCancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_bufb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "printed_by",
+   "fieldtype": "Link",
+   "label": "Printed By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_hrud",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "orders",
+   "fieldtype": "Table",
+   "label": "Orders",
+   "options": "Shipping Label Print Details"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "total_orders",
+   "fieldtype": "Int",
+   "label": "Total Orders",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_gund",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Shipping Label Print",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_puky",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "SLP-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "SLP-.YYYY.-.#####",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-01-26 14:43:30.499371",
+ "modified_by": "Administrator",
+ "module": "Masar Miraaya Shipping",
+ "name": "Shipping Label Print",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

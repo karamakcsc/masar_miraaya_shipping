@@ -1,0 +1,195 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-12-22 11:43:22.381074",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "filters_section",
+  "posting_date",
+  "delivery_date",
+  "delivery_time",
+  "magento_id",
+  "column_break_jvuu",
+  "expected_delivery_company",
+  "governorate",
+  "delivery_zone",
+  "section_break_hrds",
+  "delivery_company",
+  "delivery_company_name",
+  "column_break_mkjg",
+  "driver",
+  "driver_name",
+  "section_break_xddf",
+  "orders",
+  "section_break_1buk",
+  "amended_from",
+  "column_break_qfcs",
+  "naming_series"
+ ],
+ "fields": [
+  {
+   "fieldname": "filters_section",
+   "fieldtype": "Section Break",
+   "label": "Filters"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "delivery_date",
+   "fieldtype": "Date",
+   "label": "Delivery Date"
+  },
+  {
+   "fieldname": "delivery_time",
+   "fieldtype": "Select",
+   "label": "Delivery Time",
+   "options": "\n10:00:00\n16:00:00"
+  },
+  {
+   "fieldname": "magento_id",
+   "fieldtype": "Data",
+   "label": "Magento ID"
+  },
+  {
+   "fieldname": "column_break_jvuu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expected_delivery_company",
+   "fieldtype": "Link",
+   "label": "Expected Delivery Company",
+   "link_filters": "[[\"Customer\",\"custom_is_delivery\",\"=\",1]]",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "governorate",
+   "fieldtype": "Link",
+   "label": "Governorate",
+   "options": "Governorate"
+  },
+  {
+   "fieldname": "delivery_zone",
+   "fieldtype": "Link",
+   "label": "Delivery Zone",
+   "options": "Delivery Zone"
+  },
+  {
+   "fieldname": "section_break_hrds",
+   "fieldtype": "Section Break",
+   "label": "Assign Details"
+  },
+  {
+   "fieldname": "delivery_company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Delivery Company",
+   "link_filters": "[[\"Customer\",\"custom_is_delivery\",\"=\",1]]",
+   "mandatory_depends_on": "eval: doc.__islocal!=1",
+   "options": "Customer"
+  },
+  {
+   "fetch_from": "delivery_company.customer_name",
+   "fetch_if_empty": 1,
+   "fieldname": "delivery_company_name",
+   "fieldtype": "Data",
+   "label": "Delivery Company Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mkjg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "link_filters": "[[\"Driver\",\"custom_delivery_company\",\"=\",\"eval: doc.delivery_company\"]]",
+   "options": "Driver"
+  },
+  {
+   "fetch_from": "driver.full_name",
+   "fetch_if_empty": 1,
+   "fieldname": "driver_name",
+   "fieldtype": "Data",
+   "label": "Driver Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_xddf",
+   "fieldtype": "Section Break",
+   "label": "Orders"
+  },
+  {
+   "fieldname": "orders",
+   "fieldtype": "Table",
+   "label": "Orders",
+   "options": "Shipping Assignment Line"
+  },
+  {
+   "fieldname": "section_break_1buk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Shipping Assignment",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_qfcs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "SA-.YYYY.-.",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "SA-.YYYY.-.",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-01-26 14:43:10.668706",
+ "modified_by": "Administrator",
+ "module": "Masar Miraaya Shipping",
+ "name": "Shipping Assignment",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2025-12-14 13:34:16.784403",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-01-26 14:47:29.128723",
+ "modified_by": "Administrator",
+ "module": "Masar Miraaya Shipping",
+ "name": "packing",
+ "owner": "Administrator",
+ "page_name": "packing",
+ "roles": [
+  {
+   "role": "Dispatcher"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Packing Process"
+}

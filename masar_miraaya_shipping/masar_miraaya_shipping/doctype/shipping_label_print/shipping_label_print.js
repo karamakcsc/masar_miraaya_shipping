@@ -1,0 +1,109 @@
+// Copyright (c) 2026, KCSC and contributors
+// For license information, please see license.txt
+
+frappe.ui.form.on("Shipping Label Print", {
+    refresh: function(frm) {
+        hide_buttons(frm);
+        print_labels(frm);
+        fetch_orders(frm);
+    },
+    onload: function(frm) {
+        hide_buttons(frm);
+    },
+    delivery_method: function(frm) {
+        if (frm.doc.delivery_method) {
+            frm.doc.orders.forEach(function(order) {
+                order.delivery_method = frm.doc.delivery_method;
+            })
+            frm.refresh_field("orders");
+        }
+    },
+    delivery_zone: function(frm) {
+        if (frm.doc.delivery_zone) {
+            frm.doc.orders.forEach(function(order) {
+                order.delivery_zone = frm.doc.delivery_zone;
+            })
+            frm.refresh_field("orders");
+        }
+    }
+});
+
+
+function print_labels(frm) {
+    if (frm.doc.docstatus === 1 && frm.doc.orders?.length) {
+        frm.add_custom_button(__('Print Labels'), function () {
+            frappe.call({
+                doc: frm.doc,
+                method: "mark_as_printed",
+                freeze: true,
+                callback: function (r) {
+                    if (!r.exc) {
+                        const base_url = window.location.origin;
+                        const print_format = "Shipping Label Print";
+
+                        const url =
+                            `${base_url}/printview` +
+                            `?doctype=${encodeURIComponent(frm.doc.doctype)}` +
+                            `&name=${encodeURIComponent(frm.doc.name)}` +
+                            `&trigger_print=1` +
+                            `&format=${encodeURIComponent(print_format)}` +
+                            `&no_letterhead=1`;
+
+
+                        window.open(url, "_blank");
+                        frm.reload_doc();
+                    }
+                }
+            });
+        });
+    }
+}
+
+function hide_buttons(frm) {
+    $('button[data-original-title="Print"].btn.btn-default.icon-btn').hide();
+}
+
+function fetch_orders(frm) {
+    if (frm.doc.docstatus === 0 && frm.doc.__islocal != 1) {
+        frm.add_custom_button(__("Fetch Orders"), function() {
+            frappe.call({
+                method: "masar_miraaya_new.masar_miraaya_new.doctype.shipping_label_print.shipping_label_print.get_filtered_orders",
+                args: {
+                    delivery_date: frm.doc.delivery_date,
+                    delivery_time: frm.doc.delivery_time,
+                    governorate: frm.doc.governorate,
+                    order_status: frm.doc.order_status
+                },
+                callback: function(r) {
+                    if (r.message && r.message.orders && r.message.orders.length > 0) {
+                        frm.clear_table("orders");
+                        
+                        r.message.orders.forEach(function(order) {
+                            let row = frm.add_child("orders");
+                            row.sales_order = order.name;
+                            row.customer_name = order.customer_name;
+                            row.address = order.address;
+                            row.city = order.city;
+                            row.landmark = order.landmark;
+                            row.contact_no = order.mobile_no
+                            row.delivery_date = order.delivery_date;
+                            row.delivery_time = order.custom_delivery_time;
+                            row.total_qty = order.total_qty;
+                            row.grand_total = order.grand_total;
+                            row.magento_id = order.custom_magento_id;
+                            row.governorate = order.custom_governorate;
+                            row.sub_location = order.custom_sub_location;
+                            row.delivery_zone = frm.doc.delivery_zone;
+                            row.delivery_method = frm.doc.delivery_method;
+                            row.contact_mobile = order.contact_mobile;
+                        });
+                        
+                        frm.refresh_field("orders");
+                    } else {
+                        frappe.msgprint(__("No orders found for the selected criteria."));
+                    }
+                }
+            });
+        });
+    }
+}

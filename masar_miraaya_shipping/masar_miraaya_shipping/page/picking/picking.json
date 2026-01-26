@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2025-12-11 10:36:25.033340",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-01-26 14:47:23.556898",
+ "modified_by": "Administrator",
+ "module": "Masar Miraaya Shipping",
+ "name": "picking",
+ "owner": "Administrator",
+ "page_name": "picking",
+ "roles": [
+  {
+   "role": "Picker"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Picking Process"
+}
