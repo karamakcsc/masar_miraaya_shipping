@@ -25,6 +25,15 @@ frappe.ui.form.on("Shipping Label Print", {
             })
             frm.refresh_field("orders");
         }
+    },
+    delivery_company: function(frm) {
+        if (frm.doc.delivery_company) {
+            frm.doc.orders.forEach(function(order) {
+                order.delivery_company = frm.doc.delivery_company;
+                order.delivery_company_name = frm.doc.delivery_company_name;
+            })
+            frm.refresh_field("orders");
+        }
     }
 });
 
@@ -67,7 +76,7 @@ function fetch_orders(frm) {
     if (frm.doc.docstatus === 0 && frm.doc.__islocal != 1) {
         frm.add_custom_button(__("Fetch Orders"), function() {
             frappe.call({
-                method: "masar_miraaya_new.masar_miraaya_new.doctype.shipping_label_print.shipping_label_print.get_filtered_orders",
+                method: "masar_miraaya_shipping.masar_miraaya_shipping.doctype.shipping_label_print.shipping_label_print.get_filtered_orders",
                 args: {
                     delivery_date: frm.doc.delivery_date,
                     delivery_time: frm.doc.delivery_time,

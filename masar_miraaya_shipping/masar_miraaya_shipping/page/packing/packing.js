@@ -103,22 +103,15 @@ frappe.pages['packing'].on_page_load = function(wrapper) {
 	function open_pick_list(sales_order) {
 		frappe.call({
 			method: 'masar_miraaya_shipping.masar_miraaya_shipping.page.packing.packing.get_picklist_from_so',
-			args: {
-				so: sales_order
-			},
+			args: { so: sales_order },
 			callback: function(r) {
-				if (r.message && r.message.length > 0) {
-					frappe.open_in_new_tab = true;
-					frappe.set_route('Form', 'Pick List', r.message);
-				} else if (r.message && !r.message.success) {
-					frappe.msgprint({
-						message: __(r.message.message),
-						indicator: 'orange'
-					});
+				if (!r.message) return;
+
+				if (r.message.success) {
+					frappe.set_route('Form', 'Pick List', r.message.pick_list);
 				} else {
 					frappe.msgprint({
-						title: __('No Pick List Found'),
-						message: __('No Pick List is connected to the ID'),
+						message: __(r.message.message),
 						indicator: 'orange'
 					});
 				}

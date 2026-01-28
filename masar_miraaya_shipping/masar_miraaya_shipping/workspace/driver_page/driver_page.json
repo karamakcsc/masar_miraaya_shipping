@@ -1,0 +1,44 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"a5qg-2w-Vy\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Driver Page</span>\",\"col\":12}},{\"id\":\"H1DeJqny8c\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"5WlieuBws6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Driver Assignment\",\"col\":4}},{\"id\":\"e_XGMXYyOy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order Delivery\",\"col\":4}}]",
+ "creation": "2026-01-04 12:01:33.711682",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "color-review-points",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Driver Page",
+ "links": [],
+ "modified": "2026-01-20 11:07:57.877682",
+ "modified_by": "Administrator",
+ "module": "Masar Miraaya Shipping",
+ "name": "Driver Page",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 33.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Driver Assignment",
+   "link_to": "driver-assignment",
+   "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Order Delivery",
+   "link_to": "order-delivery",
+   "type": "Page"
+  }
+ ],
+ "title": "Driver Page"
+}

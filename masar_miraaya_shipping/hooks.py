@@ -141,8 +141,8 @@ doctype_js = {
 
 doc_events = {
 	"Pick List": {
-		"validate": "masar_miraaya_new.custom.pick_list.pick_list.validate",
-		"on_submit": "masar_miraaya_new.custom.pick_list.pick_list.on_submit"
+		"validate": "masar_miraaya_shipping.custom.pick_list.pick_list.validate",
+		"on_submit": "masar_miraaya_shipping.custom.pick_list.pick_list.on_submit"
 	}
 }
 

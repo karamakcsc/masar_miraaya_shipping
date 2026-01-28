@@ -44,7 +44,7 @@ class ShippingAssignment(Document):
 				AND tso.custom_manually = 0
 			GROUP BY tso.name
 		""", as_dict=True)
-		# frappe.throw(f"{conditions}")
+
 		return orders_sql
 
 	def on_submit(self):

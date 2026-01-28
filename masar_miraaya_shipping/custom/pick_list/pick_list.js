@@ -1,14 +1,9 @@
 frappe.ui.form.on("Pick List", {
-    refresh: function(frm) {
-        if (frm.doc.__islocal != 1 && frm.doc.docstatus === 0 && !frm.doc.custom_picking_end_time) {
-            start_picking_timer(frm);
-        }
-    },
     onload: function(frm) {
-        if (frm.doc.__islocal != 1 && frm.doc.docstatus === 0 && !frm.doc.custom_picking_end_time) {
+        if (frm.doc.__islocal != 1 && frm.doc.docstatus === 0 && !frm.doc.custom_picking_end_datetime) {
             start_picking_timer(frm);
         }
-        if (frm.doc.docstatus === 1 && !frm.doc.custom_packing_end_time) {
+        if (frm.doc.docstatus === 1 && !frm.doc.custom_packing_end_datetime) {
             start_packing_timer(frm);
         }
     }

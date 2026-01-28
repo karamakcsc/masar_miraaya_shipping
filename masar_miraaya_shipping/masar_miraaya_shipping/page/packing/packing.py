@@ -5,46 +5,56 @@ import frappe
 def get_picklist_from_so(so):
     if not so:
         return {
-            "succsses": False,
-            "message": "No Pick List or Sales Order or Magento ID"
+            "success": False,
+            "message": "No Pick List, Sales Order, or Magento ID provided"
         }
-    
+
     if frappe.db.exists("Pick List", so):
-        picklist_sql = frappe.db.sql("""
-            SELECT DISTINCT tpli.parent AS pick_list
-            FROM `tabPick List Item` tpli
-            INNER JOIN `tabSales Order` tso ON tpli.sales_order = tso.name
-            INNER JOIN `tabPick List` tpl ON tpli.parent = tpl.name
-            WHERE tpl.name = %s AND tso.custom_magento_status = 'Picked' AND tpl.docstatus = 1
-        """,(so,), as_dict=True)
-        if picklist_sql:
-            return so
-    
+        if frappe.db.exists("Pick List", {
+            "name": so,
+            "docstatus": 1
+        }):
+            return {
+                "success": True,
+                "pick_list": so
+            }
+
     so_sql = frappe.db.sql("""
         SELECT DISTINCT tpli.parent AS pick_list
         FROM `tabPick List Item` tpli
         INNER JOIN `tabSales Order` tso ON tpli.sales_order = tso.name
         INNER JOIN `tabPick List` tpl ON tpli.parent = tpl.name
-        WHERE tso.name = %s AND tso.custom_magento_status = 'Picked' AND tpl.docstatus = 1
-    """,(so,), as_dict=True)
-    
+        WHERE tso.name = %s
+          AND tso.custom_magento_status = 'Picked'
+          AND tpl.docstatus = 1
+    """, (so,), as_dict=True)
+
     if so_sql:
-        return so_sql[0].pick_list
-    
-    magneto_id_sql = frappe.db.sql("""
+        return {
+            "success": True,
+            "pick_list": so_sql[0].pick_list
+        }
+
+    magento_sql = frappe.db.sql("""
         SELECT DISTINCT tpl.name AS pick_list
         FROM `tabPick List` tpl
         INNER JOIN `tabPick List Item` tpli ON tpl.name = tpli.parent
         INNER JOIN `tabSales Order` tso ON tpli.sales_order = tso.name
-        WHERE tpl.custom_magento_id = %s AND tso.custom_magento_status = 'Picked' AND tpl.docstatus = 1
+        WHERE tpl.custom_magento_id = %s
+          AND tso.custom_magento_status = 'Picked'
+          AND tpl.docstatus = 1
     """, (so,), as_dict=True)
-    
-    if magneto_id_sql:
-        return magneto_id_sql[0].pick_list
-    return {
-            "succsses": False,
-            "message": "The packing process is not valid right now the Sales Order Status must be 'Picked'"
+
+    if magento_sql:
+        return {
+            "success": True,
+            "pick_list": magento_sql[0].pick_list
         }
+
+    return {
+        "success": False,
+        "message": "Packing is not allowed. Sales Order status must be 'Picked'."
+    }
 
 @frappe.whitelist()
 def get_confirmed_sales_orders(so):

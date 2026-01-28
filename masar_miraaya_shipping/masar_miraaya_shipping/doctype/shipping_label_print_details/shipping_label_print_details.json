@@ -28,6 +28,8 @@
   "district",
   "column_break_rcek",
   "delivery_method",
+  "delivery_company",
+  "delivery_company_name",
   "section_break_qamu",
   "pick_list",
   "column_break_xlxv",
@@ -43,6 +45,9 @@
   "column_break_nnde",
   "order_barcode",
   "order_image",
+  "section_break_wveq",
+  "outsourced_label",
+  "outsourced_image",
   "section_break_hsmu",
   "print_count",
   "column_break_kkdv",
@@ -182,7 +187,6 @@
    "columns": 1,
    "fieldname": "governorate",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Governorate",
    "options": "Governorate",
    "read_only": 1,
@@ -317,13 +321,47 @@
    "fieldtype": "Check",
    "label": "Label Printed",
    "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fetch_from": "delivery_company.customer_name",
+   "fetch_if_empty": 1,
+   "fieldname": "delivery_company_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Delivery Company Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_wveq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "outsourced_label",
+   "fieldtype": "Long Text",
+   "label": "Outsourced Label",
+   "read_only": 1
+  },
+  {
+   "fieldname": "outsourced_image",
+   "fieldtype": "Image",
+   "label": "Outsourced Image",
+   "options": "outsourced_label"
+  },
+  {
+   "fieldname": "delivery_company",
+   "fieldtype": "Link",
+   "label": "Delivery Company",
+   "link_filters": "[[\"Customer\",\"custom_is_delivery\",\"=\",1]]",
+   "options": "Customer"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-26 14:43:54.168199",
+ "modified": "2026-01-28 10:27:04.984531",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print Details",

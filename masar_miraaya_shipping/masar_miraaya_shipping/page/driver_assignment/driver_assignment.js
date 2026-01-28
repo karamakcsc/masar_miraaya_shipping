@@ -124,7 +124,7 @@ frappe.pages['driver-assignment'].on_page_load = function(wrapper) {
 
 	$orders_container.on('click', '.remove-so', function() {
 		let so = $(this).data('so');
-		scanned_orders.delete(so);
+		delete scanned_orders[so];
 		render_scanned_list();
 	});
 
@@ -160,7 +160,7 @@ frappe.pages['driver-assignment'].on_page_load = function(wrapper) {
 
 
 	page.add_inner_button(__('Refresh'), function() {
-		scanned_orders.clear();
+		scanned_orders = {};
 		render_scanned_list();
 		$barcode_section.find('.barcode-input').val('').focus();
 	});

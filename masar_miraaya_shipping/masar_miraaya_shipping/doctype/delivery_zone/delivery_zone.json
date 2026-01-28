@@ -13,8 +13,8 @@
   "capacity",
   "column_break_pxee",
   "is_enabled",
-  "governorate",
-  "district",
+  "governorate_ms",
+  "district_ms",
   "section_break_zujt",
   "notes"
  ],
@@ -58,22 +58,6 @@
    "label": "Enabled"
   },
   {
-   "fieldname": "governorate",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Governorate",
-   "options": "Governorate"
-  },
-  {
-   "fieldname": "district",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "District",
-   "options": "District"
-  },
-  {
    "fieldname": "section_break_zujt",
    "fieldtype": "Section Break"
   },
@@ -81,12 +65,24 @@
    "fieldname": "notes",
    "fieldtype": "Text Editor",
    "label": "Notes"
+  },
+  {
+   "fieldname": "district_ms",
+   "fieldtype": "Table MultiSelect",
+   "label": "District",
+   "options": "District MultiSelect"
+  },
+  {
+   "fieldname": "governorate_ms",
+   "fieldtype": "Table MultiSelect",
+   "label": "Governorate",
+   "options": "Governorate MultiSelect"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-26 14:44:27.473740",
+ "modified": "2026-01-27 14:10:50.005213",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Delivery Zone",
