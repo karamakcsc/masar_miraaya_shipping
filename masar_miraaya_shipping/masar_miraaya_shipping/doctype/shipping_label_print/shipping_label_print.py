@@ -5,6 +5,7 @@ from barcode.writer import ImageWriter
 import io
 import base64
 from masar_miraaya.api import base_data, request_with_history
+from frappe.utils import now_datetime
 
 
 class ShippingLabelPrint(Document):
@@ -71,68 +72,29 @@ class ShippingLabelPrint(Document):
 
     def generate_barcodes(self):
         for order in self.orders:
+            if not order.delivery_company or not order.delivery_company_name:
+                    frappe.throw(f"Please set Delivery Company for Sales Order {order.sales_order} before printing the label.")
             if order.pick_list:
                     pl_barcode = self.create_barcode(order.pick_list)
                     order.picklist_barcode = pl_barcode
             if order.delivery_method and order.delivery_method == "In-House":
+                expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
                 so_barcode = self.create_barcode(order.sales_order)
                 order.order_barcode = so_barcode
+                if expected_delivery_company and expected_delivery_company != order.delivery_company:
+                    reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
             elif order.delivery_method and order.delivery_method == "Outsourced":
-                if not order.delivery_company or not order.delivery_company_name:
-                    frappe.throw(f"Please set Delivery Company for Sales Order {order.sales_order} before printing the label.")
                 expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
-                base_url, headers = base_data("magento")
-                if order.delivery_company_name == expected_delivery_company:
-                    get_url = f"{base_url.rstrip('/')}/rest/V1/miraaya/shipping/order/label/{order.magento_id}"
-                    response = request_with_history(
-                        req_method='GET', 
-                        document=self.doctype, 
-                        doctype=self.name, 
-                        url=get_url, 
-                        headers=headers
-                    )
-                    if response.status_code == 200:
-                        response_json = response.json()
-                        if response_json:
-                            order.outsourced_label = f"data:image/png;base64,{response_json['label_base64']}"
-                        # if 'label_base64' in response_json:
-                        #     order.outsourced_label = f"data:image/png;base64,{response_json['label_base64']}"
-                        else:
-                            frappe.throw(f"Label data not found in response for Sales Order {order.sales_order} Magento ID {order.magento_id}.")
-                elif order.delivery_company_name and order.expected_delivery_company and order.delivery_company_name != expected_delivery_company:
-                    post_url = f"{base_url.rstrip('/')}/rest/V1/miraaya/shipping/order/reassign"
-                    
-                    payload = {
-                        "incrementId": order.magento_id,
-                        "shippingMethod": order.delivery_company_name
-                    }
-                    
-                    response = request_with_history(
-                        req_method='POST', 
-                        document=self.doctype, 
-                        doctype=self.name, 
-                        url=post_url, 
-                        headers=headers, 
-                        data=payload
-                    )
-                    if response.status_code == 200:
-                        get_url = f"{base_url.rstrip('/')}/rest/V1/miraaya/shipping/order/label/{order.magento_id}"
-                        response = request_with_history(
-                            req_method='GET', 
-                            document=self.doctype, 
-                            doctype=self.name, 
-                            url=get_url, 
-                            headers=headers
-                        )
-                        if response.status_code == 200:
-                            response_json = response.json()
-                            if response_json:
-                                order.outsourced_label = f"data:image/png;base64,{response_json}"
-                            else:
-                                frappe.throw(f"Label data not found in response for Sales Order {order.sales_order} Magento ID {order.magento_id}.")
-                    else:
-                        frappe.throw(f"Failed to reassign shipping method for Sales Order {order.sales_order} Magento ID {order.magento_id}. Response: {response.text}")
-                    
+                if expected_delivery_company and expected_delivery_company != order.delivery_company:
+                    cont = reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
+                    if cont:
+                        label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
+                        if label_pdf:
+                            create_label_attachment(label_pdf, self.doctype, self.name)
+                elif expected_delivery_company and expected_delivery_company == order.delivery_company:
+                    label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
+                    if label_pdf:
+                        create_label_attachment(label_pdf, self.doctype, self.name)
                     
         self.save(ignore_permissions=True)
     
@@ -211,3 +173,77 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
     return {
         'orders': orders,
     }
+    
+def reassign_delivery_company(magento_id, delivery_company, doctype, docname):
+    base_url, headers = base_data("magento")
+
+    post_url = f"{base_url.rstrip('/')}/rest/V1/miraaya/shipping/order/reassign"
+    payload = {
+        "incrementId": magento_id,
+        "shippingMethod": delivery_company
+    }
+
+    response = request_with_history(
+        req_method="POST",
+        document=doctype,
+        doctype=docname,
+        url=post_url,
+        headers=headers,
+        payload=payload
+    )
+
+    if response.status_code != 200:
+        frappe.throw(
+            f"Failed to reassign shipping method for Magento ID {magento_id}. "
+            f"Response: {response.text}"
+        )
+
+    return True
+
+def get_shipping_label(magento_id, doctype, docname):
+    base_url, headers = base_data("magento")
+
+    get_url = f"{base_url.rstrip('/')}/rest/V1/miraaya/shipping/order/label/{magento_id}"
+
+    response = request_with_history(
+        req_method="GET",
+        document=doctype,
+        doctype=docname,
+        url=get_url,
+        headers=headers
+    )
+
+    if response.status_code != 200:
+        frappe.throw(
+            f"Failed to fetch label for Magento ID {magento_id}. "
+            f"Response: {response.text}"
+        )
+
+    label_pdf = response.json()
+    if not label_pdf:
+        frappe.throw(f"Label data not found for Magento ID {magento_id}")
+
+    return label_pdf
+
+def create_label_attachment(label_response, doctype, docname):
+    label_url = label_response.get("label_url")
+    if not label_url:
+        frappe.throw("Label URL not found in response.")
+
+    file_name = (
+        f"Shipping-Label-{label_response.get('order_id')}-"
+        f"{now_datetime().strftime('%Y%m%d%H%M%S')}.pdf"
+    )
+
+    file_doc = frappe.get_doc({
+        "doctype": "File",
+        "file_name": file_name,
+        "file_url": label_url,
+        "is_private": 0,
+        "attached_to_doctype": doctype,
+        "attached_to_name": docname
+    })
+
+    file_doc.save(ignore_permissions=True)
+
+    return file_doc.file_url
