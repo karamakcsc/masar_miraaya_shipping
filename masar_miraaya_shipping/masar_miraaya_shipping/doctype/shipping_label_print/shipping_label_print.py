@@ -389,7 +389,7 @@ def expected_delivery_company_map(expected_delivery_company):
     dc_map = {
         "Fleetroot": "Miraaya fleet",
         "Sandoog": "SANDOOK",
-        "Boxy": "Alarabia"
+        "Boxy": "BOXY"
     }
     
     return dc_map.get(expected_delivery_company)
