@@ -6,7 +6,6 @@ frappe.ui.form.on("Shipping Label Print", {
         hide_buttons(frm);
         print_labels(frm);
         fetch_orders(frm);
-        // show_zone_summary(frm);
     },
     onload: function(frm) {
         hide_buttons(frm);
@@ -99,7 +98,7 @@ function fetch_orders(frm) {
                             row.grand_total = order.grand_total;
                             row.magento_id = order.custom_magento_id;
                             row.governorate = order.custom_governorate;
-                            row.district = order.custom_sub_location;
+                            row.district = order.custom_district;
                             row.delivery_zone = order.delivery_zone;
                             row.delivery_method = frm.doc.delivery_method;
                             row.delivery_company = frm.doc.delivery_company || row.delivery_company;
@@ -138,28 +137,4 @@ function show_grouping_message(frm, grouped_orders, zones) {
         message: message,
         indicator: 'green'
     });
-}
-
-function show_zone_summary(frm) {
-    if (frm.doc.orders && frm.doc.orders.length > 0) {
-        let zone_counts = {};
-        
-        frm.doc.orders.forEach(function(order) {
-            const zone = order.delivery_zone || 'Unassigned';
-            zone_counts[zone] = (zone_counts[zone] || 0) + 1;
-        });
-        
-        let summary_html = '<div class="zone-summary" style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin: 10px 0;">';
-        summary_html += '<strong>Delivery Zone Distribution:</strong><br>';
-        
-        for (let zone in zone_counts) {
-            summary_html += `<div style="margin: 5px 0;">${zone}: ${zone_counts[zone]} order(s)</div>`;
-        }
-        
-        summary_html += '</div>';
-        
-        if (!frm.fields_dict.orders.$wrapper.find('.zone-summary').length) {
-            frm.fields_dict.orders.$wrapper.prepend(summary_html);
-        }
-    }
 }
