@@ -162,7 +162,7 @@ class ShippingLabelPrint(Document):
                         label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                         if label_pdf:
                             create_label_attachment(label_pdf, self.doctype, self.name)
-                elif expected_delivery_company_name and expected_delivery_company_name == order.delivery_company:
+                elif expected_delivery_company_name and expected_delivery_company_name == order.delivery_company_name:
                     label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                     if label_pdf:
                         create_label_attachment(label_pdf, self.doctype, self.name)
@@ -355,12 +355,16 @@ def get_shipping_label(magento_id, doctype, docname):
             f"Failed to fetch label for Magento ID {magento_id}. "
             f"Response: {response.text}"
         )
+    
+    json_response = response.json()
+    if not json_response.get("success"):
+        frappe.throw(
+            f"Label data not found for Magento ID {magento_id}. "
+            f"Message: {json_response.get('message')}"
+        )
+    
 
-    label_pdf = response.json()
-    if not label_pdf:
-        frappe.throw(f"Label data not found for Magento ID {magento_id}")
-
-    return label_pdf
+    return json_response
 
 def create_label_attachment(label_response, doctype, docname):
     label_url = label_response.get("label_url")
