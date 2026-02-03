@@ -51,6 +51,10 @@ function fetch_orders(frm) {
                             row.customer_name = order.customer_name;
                             row.grand_total = order.grand_total;
                             row.delivery_zone = order.custom_delivery_zone || frm.doc.delivery_zone;
+                            row.driver = frm.doc.driver || row.driver;
+                            row.driver_name = frm.doc.driver_name || row.driver_name 
+                            row.delivery_company = frm.doc.delivery_company || row.delivery_company;
+                            row.delivery_company_name = frm.doc.delivery_company_name || row.delivery_company_name;
                         });
                         frm.refresh_field("orders");
                     } else {

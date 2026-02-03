@@ -80,6 +80,7 @@ class ShippingAssignment(Document):
 						create_version_log(pl_doc.doctype, pl_doc.name, "custom_driver_name", old_driver_name, self.driver_name)
 					order.pick_list = pl
 			frappe.db.commit()
+			frappe.msgprint("Drivers assigned successfully.", alert=True, indicator="green")
 			
 
 def create_version_log(doctype, docname, field, old_value, new_value):

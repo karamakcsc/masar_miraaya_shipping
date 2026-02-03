@@ -6,24 +6,23 @@ frappe.ui.form.on("Shipping Label Print", {
         hide_buttons(frm);
         print_labels(frm);
         fetch_orders(frm);
+        // show_zone_summary(frm);
     },
     onload: function(frm) {
         hide_buttons(frm);
     },
     delivery_method: function(frm) {
         if (frm.doc.delivery_method) {
+            frm.doc.delivery_company = null;
+            frm.doc.delivery_company_name = null;
             frm.doc.orders.forEach(function(order) {
                 order.delivery_method = frm.doc.delivery_method;
-            })
+                order.delivery_company = null;
+                order.delivery_company_name = null;
+            });
             frm.refresh_field("orders");
-        }
-    },
-    delivery_zone: function(frm) {
-        if (frm.doc.delivery_zone) {
-            frm.doc.orders.forEach(function(order) {
-                order.delivery_zone = frm.doc.delivery_zone;
-            })
-            frm.refresh_field("orders");
+            frm.refresh_field("delivery_company");
+            frm.refresh_field("delivery_company_name");
         }
     },
     delivery_company: function(frm) {
@@ -31,7 +30,7 @@ frappe.ui.form.on("Shipping Label Print", {
             frm.doc.orders.forEach(function(order) {
                 order.delivery_company = frm.doc.delivery_company;
                 order.delivery_company_name = frm.doc.delivery_company_name;
-            })
+            });
             frm.refresh_field("orders");
         }
     }
@@ -57,7 +56,6 @@ function print_labels(frm) {
                             `&trigger_print=1` +
                             `&format=${encodeURIComponent(print_format)}` +
                             `&no_letterhead=1`;
-
 
                         window.open(url, "_blank");
                         frm.reload_doc();
@@ -94,25 +92,74 @@ function fetch_orders(frm) {
                             row.address = order.address;
                             row.city = order.city;
                             row.landmark = order.landmark;
-                            row.contact_no = order.mobile_no
+                            row.contact_no = order.mobile_no;
                             row.delivery_date = order.delivery_date;
                             row.delivery_time = order.custom_delivery_time;
                             row.total_qty = order.total_qty;
                             row.grand_total = order.grand_total;
                             row.magento_id = order.custom_magento_id;
                             row.governorate = order.custom_governorate;
-                            row.sub_location = order.custom_sub_location;
-                            row.delivery_zone = frm.doc.delivery_zone;
+                            row.district = order.custom_sub_location;
+                            row.delivery_zone = order.delivery_zone;
                             row.delivery_method = frm.doc.delivery_method;
-                            row.contact_mobile = order.contact_mobile;
+                            row.delivery_company = frm.doc.delivery_company || row.delivery_company;
+                            row.delivery_company_name = frm.doc.delivery_company_name || row.delivery_company_name;
                         });
                         
                         frm.refresh_field("orders");
+                        
+                        if (r.message.grouped_orders) {
+                            show_grouping_message(frm, r.message.grouped_orders, r.message.zones);
+                        }
                     } else {
                         frappe.msgprint(__("No orders found for the selected criteria."));
                     }
                 }
             });
         });
+    }
+}
+
+function show_grouping_message(frm, grouped_orders, zones) {
+    let message = `<div style="margin: 10px 0;">
+        <strong>Orders grouped by Delivery Zone:</strong><br>`;
+    
+    zones.forEach(function(zone) {
+        const count = grouped_orders[zone].length;
+        message += `<div style="margin: 5px 0;">
+            <strong>${zone}:</strong> ${count} order(s)
+        </div>`;
+    });
+    
+    message += `</div>`;
+    
+    frappe.msgprint({
+        title: __('Order Grouping Summary'),
+        message: message,
+        indicator: 'green'
+    });
+}
+
+function show_zone_summary(frm) {
+    if (frm.doc.orders && frm.doc.orders.length > 0) {
+        let zone_counts = {};
+        
+        frm.doc.orders.forEach(function(order) {
+            const zone = order.delivery_zone || 'Unassigned';
+            zone_counts[zone] = (zone_counts[zone] || 0) + 1;
+        });
+        
+        let summary_html = '<div class="zone-summary" style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin: 10px 0;">';
+        summary_html += '<strong>Delivery Zone Distribution:</strong><br>';
+        
+        for (let zone in zone_counts) {
+            summary_html += `<div style="margin: 5px 0;">${zone}: ${zone_counts[zone]} order(s)</div>`;
+        }
+        
+        summary_html += '</div>';
+        
+        if (!frm.fields_dict.orders.$wrapper.find('.zone-summary').length) {
+            frm.fields_dict.orders.$wrapper.prepend(summary_html);
+        }
     }
 }

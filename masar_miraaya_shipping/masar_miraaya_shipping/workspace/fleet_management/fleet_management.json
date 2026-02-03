@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"lR8LJH8PT5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fleet Management</span>\",\"col\":12}},{\"id\":\"dth4Pbg0M1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"MMgLmI0THz\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shipping Label Print\",\"col\":4}},{\"id\":\"YRe7NLH3nB\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shipping Assignment\",\"col\":4}}]",
+ "content": "[{\"id\":\"lR8LJH8PT5\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Fleet Management</span>\",\"col\":12}},{\"id\":\"dth4Pbg0M1\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"MMgLmI0THz\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shipping Label Print\",\"col\":4}},{\"id\":\"YRe7NLH3nB\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Shipping Assignment\",\"col\":4}},{\"id\":\"-WTz_LRU9E\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Delivery Zone\",\"col\":4}},{\"id\":\"hndLj4oDji\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Governorate\",\"col\":4}},{\"id\":\"laUONfrYq_\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"District\",\"col\":4}}]",
  "creation": "2026-01-04 11:36:52.088597",
  "custom_blocks": [],
  "docstatus": 0,
@@ -13,7 +13,7 @@
  "is_hidden": 0,
  "label": "Fleet Management",
  "links": [],
- "modified": "2026-01-04 11:44:46.733215",
+ "modified": "2026-02-03 16:15:54.757068",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Fleet Management",
@@ -28,8 +28,32 @@
   {
    "color": "Grey",
    "doc_view": "List",
+   "label": "Delivery Zone",
+   "link_to": "Delivery Zone",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Governorate",
+   "link_to": "Governorate",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
    "label": "Shipping Label Print",
    "link_to": "Shipping Label Print",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "District",
+   "link_to": "District",
    "stats_filter": "[]",
    "type": "DocType"
   },

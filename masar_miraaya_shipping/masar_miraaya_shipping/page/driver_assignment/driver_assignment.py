@@ -84,7 +84,7 @@ def assign_driver_and_dispatch(sales_orders):
         pick_list = pick_list[0]
         
         if not pick_list.custom_driver or not pick_list.custom_delivery_company:
-            frappe.throw(f"Driver or Delivery Company missing in Pick List {pick_list.name}")
+            frappe.throw(f"Driver or Delivery Company are not assigned.")
 
         so.custom_driver = pick_list.custom_driver
         so.custom_delivery_company = pick_list.custom_delivery_company

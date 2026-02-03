@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2025-12-11 14:29:21.705737",
@@ -14,17 +15,16 @@
   "order_status",
   "section_break_njbd",
   "delivery_method",
-  "delivery_company",
   "column_break_jdrr",
-  "delivery_zone",
-  "delivery_comapny_name",
+  "delivery_company",
+  "delivery_company_name",
+  "section_break_hrud",
+  "orders",
+  "total_orders",
   "section_break_vpnu",
   "print_status",
   "column_break_bufb",
   "printed_by",
-  "section_break_hrud",
-  "orders",
-  "total_orders",
   "section_break_gund",
   "amended_from",
   "column_break_puky",
@@ -84,13 +84,6 @@
   {
    "fieldname": "column_break_jdrr",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "delivery_zone",
-   "fieldtype": "Link",
-   "label": "Delivery Zone",
-   "link_filters": "[[\"Delivery Zone\",\"is_enabled\",\"=\",1]]",
-   "options": "Delivery Zone"
   },
   {
    "fieldname": "section_break_vpnu",
@@ -162,19 +155,19 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval: doc.delivery_method == \"Outsourced\";",
    "fieldname": "delivery_company",
    "fieldtype": "Link",
    "label": "Delivery Company",
    "link_filters": "[[\"Customer\",\"custom_is_delivery\",\"=\",1]]",
+   "mandatory_depends_on": "eval: doc.delivery_method",
    "options": "Customer"
   },
   {
    "fetch_from": "delivery_company.customer_name",
    "fetch_if_empty": 1,
-   "fieldname": "delivery_comapny_name",
+   "fieldname": "delivery_company_name",
    "fieldtype": "Data",
-   "label": "Delivery Comapny Name",
+   "label": "Delivery Company Name",
    "read_only": 1
   }
  ],
@@ -182,7 +175,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-27 13:04:42.171203",
+ "modified": "2026-02-03 16:01:54.914689",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print",
@@ -190,15 +183,34 @@
  "owner": "Administrator",
  "permissions": [
   {
+   "amend": 1,
    "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
    "export": 1,
+   "import": 1,
    "print": 1,
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Fleet Manager",
    "select": 1,
    "share": 1,
    "submit": 1,

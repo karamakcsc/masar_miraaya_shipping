@@ -106,7 +106,6 @@
    "fetch_from": "sales_order.delivery_date",
    "fieldname": "delivery_date",
    "fieldtype": "Date",
-   "in_list_view": 1,
    "label": "Delivery Date",
    "read_only": 1
   },
@@ -340,6 +339,7 @@
    "allow_on_submit": 1,
    "fieldname": "outsourced_label",
    "fieldtype": "Long Text",
+   "hidden": 1,
    "label": "Outsourced Label",
    "read_only": 1
   },
@@ -350,8 +350,11 @@
    "options": "outsourced_label"
   },
   {
+   "columns": 1,
    "fieldname": "delivery_company",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Delivery Company",
    "link_filters": "[[\"Customer\",\"custom_is_delivery\",\"=\",1]]",
    "options": "Customer"
@@ -361,7 +364,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-01-28 10:27:04.984531",
+ "modified": "2026-02-03 16:03:49.332428",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print Details",

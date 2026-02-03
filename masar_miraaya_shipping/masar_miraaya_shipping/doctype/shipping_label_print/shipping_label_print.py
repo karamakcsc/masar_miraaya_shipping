@@ -12,6 +12,9 @@ class ShippingLabelPrint(Document):
     def validate(self):
         self.total_orders = len(self.orders)
         for order in self.orders:
+            self.set_location_details(order)           
+            self.auto_assign_delivery_zone(order)
+            
             picklist_no = self.get_picklist(order.sales_order)
             dn_no = self.get_delivery_note(order.sales_order)
             if picklist_no:
@@ -32,6 +35,72 @@ class ShippingLabelPrint(Document):
         self.print_status = "Cancelled"
         for order in self.orders:
             order.qr_active = 0
+    
+    def set_location_details(self, order):
+        if order.sales_order:
+            so_doc = frappe.get_doc("Sales Order", order.sales_order)
+            
+            if hasattr(so_doc, 'custom_governorate') and so_doc.custom_governorate:
+                order.governorate = so_doc.custom_governorate
+            
+            if hasattr(so_doc, 'custom_district') and so_doc.custom_district:
+                order.district = so_doc.custom_district
+    
+    def auto_assign_delivery_zone(self, order):
+        if not order.governorate:
+            frappe.throw(f"Governorate not found for Sales Order {order.sales_order}")
+
+        dz = frappe.qb.DocType("Delivery Zone")
+        dzg = frappe.qb.DocType("Governorate MultiSelect")
+        dzd = frappe.qb.DocType("District MultiSelect")
+
+        base_query = (
+            frappe.qb.from_(dz)
+            .join(dzg).on(
+                (dzg.parent == dz.name) &
+                (dzg.governorate == order.governorate)
+            )
+            .select(dz.name)
+            .where(
+                (dz.is_enabled == 1)
+            )
+        )
+
+        if order.district:
+            exact_zone = (
+                base_query
+                .join(dzd).on(
+                    (dzd.parent == dz.name) &
+                    (dzd.district == order.district)
+                )
+                .orderby(dz.creation, order=frappe.qb.desc)
+                .limit(1)
+                .run(as_dict=True)
+            )
+
+            if exact_zone:
+                order.delivery_zone = exact_zone[0]["name"]
+                return
+
+        governorate_zones = (
+            base_query
+            .orderby(dz.creation, order=frappe.qb.desc)
+            .run(as_dict=True)
+        )
+
+        if governorate_zones:
+            catch_all = [z for z in governorate_zones if not z.get("district")]
+            order.delivery_zone = (
+                catch_all[0]["name"]
+                if catch_all
+                else governorate_zones[0]["name"]
+            )
+        else:
+            frappe.throw(
+                f"No enabled Delivery Zone found for Governorate '{order.governorate}' "
+                f"{f'and District {order.district}' if order.district else ''}. "
+                f"Please create a delivery zone for this location."
+            )
             
     def get_picklist(self, sales_order):
         existing_pl = frappe.db.sql("""
@@ -79,19 +148,21 @@ class ShippingLabelPrint(Document):
                     order.picklist_barcode = pl_barcode
             if order.delivery_method and order.delivery_method == "In-House":
                 expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
+                expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
                 so_barcode = self.create_barcode(order.sales_order)
                 order.order_barcode = so_barcode
-                if expected_delivery_company and expected_delivery_company != order.delivery_company:
+                if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
                     reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
             elif order.delivery_method and order.delivery_method == "Outsourced":
                 expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
-                if expected_delivery_company and expected_delivery_company != order.delivery_company:
+                expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
+                if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
                     cont = reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
                     if cont:
                         label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                         if label_pdf:
                             create_label_attachment(label_pdf, self.doctype, self.name)
-                elif expected_delivery_company and expected_delivery_company == order.delivery_company:
+                elif expected_delivery_company_name and expected_delivery_company_name == order.delivery_company:
                     label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                     if label_pdf:
                         create_label_attachment(label_pdf, self.doctype, self.name)
@@ -151,11 +222,12 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
     orders = frappe.get_all(
         "Sales Order",
         filters=filters,
-        fields=["name", "customer", "customer_name", "delivery_date", "custom_delivery_time", 
-                "grand_total", "custom_governorate", "total_qty", "customer_address", 
-                "custom_magento_id"
+        fields=[
+            "name", "customer", "customer_name", "delivery_date", "custom_delivery_time", 
+            "grand_total", "custom_governorate", "custom_district", "total_qty", 
+            "customer_address", "custom_magento_id"
         ],
-        order_by="custom_governorate, name"
+        order_by="custom_governorate, custom_district, name"
     )
     
     for order in orders:
@@ -163,16 +235,81 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
         order["city"] = ""
         order["landmark"] = ""
         order["mobile_no"] = ""
+        order["district"] = order.get("custom_district", "")
+        order["delivery_zone"] = ""
+        
         if order.customer_address:
             address_doc = frappe.get_doc("Address", order.customer_address)
             order["address"] = address_doc.address_line1
             order["city"] = address_doc.city
             order["landmark"] = address_doc.address_title
             order["mobile_no"] = address_doc.phone
+        
+        order["delivery_zone"] = get_delivery_zone_for_order(
+            order.get("custom_governorate"),
+            order.get("custom_district")
+        )
+    
+    grouped_orders = {}
+    for order in orders:
+        zone = order.get("delivery_zone", "Unassigned")
+        if zone not in grouped_orders:
+            grouped_orders[zone] = []
+        grouped_orders[zone].append(order)
     
     return {
         'orders': orders,
+        'grouped_orders': grouped_orders,
+        'zones': list(grouped_orders.keys())
     }
+
+def get_delivery_zone_for_order(governorate, district=None):
+    if not governorate:
+        return None
+
+    dz = frappe.qb.DocType("Delivery Zone")
+    dzg = frappe.qb.DocType("Governorate MultiSelect")
+    dzd = frappe.qb.DocType("District MultiSelect")
+
+    base_query = (
+        frappe.qb.from_(dz)
+        .join(dzg).on(
+            (dzg.parent == dz.name) &
+            (dzg.governorate == governorate)
+        )
+        .select(dz.name)
+        .where(
+            (dz.is_enabled == 1)
+        )
+    )
+
+    if district:
+        exact_zone = (
+            base_query
+            .join(dzd).on(
+                (dzd.parent == dz.name) &
+                (dzd.district == district)
+            )
+            .orderby(dz.creation, order=frappe.qb.desc)
+            .limit(1)
+            .run(as_dict=True)
+        )
+        if exact_zone:
+            return exact_zone[0]["name"]
+
+    governorate_zones = (
+        base_query
+        .orderby(dz.creation, order=frappe.qb.desc)
+        .run(as_dict=True)
+    )
+
+    if governorate_zones:
+        catch_all = [z for z in governorate_zones if not z.get("district")]
+        if catch_all:
+            return catch_all[0]["name"]
+        return governorate_zones[0]["name"]
+
+    return None
     
 def reassign_delivery_company(magento_id, delivery_company, doctype, docname):
     base_url, headers = base_data("magento")
@@ -247,3 +384,12 @@ def create_label_attachment(label_response, doctype, docname):
     file_doc.save(ignore_permissions=True)
 
     return file_doc.file_url
+
+def expected_delivery_company_map(expected_delivery_company):
+    dc_map = {
+        "Fleetroot": "Miraaya fleet",
+        "Sandoog": "SANDOOK",
+        "Boxy": "Alarabia"
+    }
+    
+    return dc_map.get(expected_delivery_company)
