@@ -6,6 +6,7 @@ import io
 import base64
 from masar_miraaya.api import base_data, request_with_history
 from frappe.utils import now_datetime
+import json
 
 
 class ShippingLabelPrint(Document):
@@ -210,22 +211,36 @@ class ShippingLabelPrint(Document):
     
 @frappe.whitelist()
 def get_filtered_orders(delivery_date, delivery_time, governorate, order_status):
+    governorate_list = []
+
+    if governorate:
+        governorate = json.loads(governorate)
+        governorate_list = [row.get("governorate") for row in governorate if row.get("governorate")]
+
+    if not governorate_list:
+        return {
+            "orders": [],
+            "grouped_orders": {},
+            "zones": []
+        }
+
     filters = {
         "delivery_date": delivery_date,
         "custom_delivery_time": delivery_time,
         "custom_magento_status": order_status,
-        "custom_governorate": governorate,
+        "custom_governorate": ["in", governorate_list],
         "docstatus": 1,
         "custom_manually": 0,
     }
-    
+
     orders = frappe.get_all(
         "Sales Order",
         filters=filters,
         fields=[
-            "name", "customer", "customer_name", "delivery_date", "custom_delivery_time", 
-            "grand_total", "custom_governorate", "custom_district", "total_qty", 
-            "customer_address", "custom_magento_id"
+            "name", "customer", "customer_name", "delivery_date",
+            "custom_delivery_time", "grand_total",
+            "custom_governorate", "custom_district",
+            "total_qty", "customer_address", "custom_magento_id"
         ],
         order_by="custom_governorate, custom_district, name"
     )
@@ -237,30 +252,36 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
         order["mobile_no"] = ""
         order["district"] = order.get("custom_district", "")
         order["delivery_zone"] = ""
-        
+
         if order.customer_address:
             address_doc = frappe.get_doc("Address", order.customer_address)
             order["address"] = address_doc.address_line1
             order["city"] = address_doc.city
             order["landmark"] = address_doc.address_title
             order["mobile_no"] = address_doc.phone
-        
-        order["delivery_zone"] = get_delivery_zone_for_order(
+
+        delivery_zone = get_delivery_zone_for_order(
             order.get("custom_governorate"),
             order.get("custom_district")
         )
-    
+        
+        order["delivery_zone"] = delivery_zone
+        
+        delivery_company, delivery_company_name, delivery_method = resolve_delivery_company(delivery_zone)
+
+        order["delivery_company"] = delivery_company
+        order["delivery_company_name"] = delivery_company_name
+        order["delivery_method"] = delivery_method
+
     grouped_orders = {}
     for order in orders:
         zone = order.get("delivery_zone", "Unassigned")
-        if zone not in grouped_orders:
-            grouped_orders[zone] = []
-        grouped_orders[zone].append(order)
-    
+        grouped_orders.setdefault(zone, []).append(order)
+
     return {
-        'orders': orders,
-        'grouped_orders': grouped_orders,
-        'zones': list(grouped_orders.keys())
+        "orders": orders,
+        "grouped_orders": grouped_orders,
+        "zones": list(grouped_orders.keys())
     }
 
 def get_delivery_zone_for_order(governorate, district=None):
@@ -397,3 +418,23 @@ def expected_delivery_company_map(expected_delivery_company):
     }
     
     return dc_map.get(expected_delivery_company)
+
+def resolve_delivery_company(delivery_zone):
+    delivery_company = None
+    delivery_company_name = None
+    delivery_method = None
+
+    if delivery_zone:
+        dz = frappe.db.get_value(
+            "Delivery Zone",
+            delivery_zone,
+            ["delivery_company", "delivery_company_name", "delivery_method"],
+            as_dict=True
+        )
+
+        if dz:
+            delivery_company = dz.delivery_company
+            delivery_company_name = dz.delivery_company_name
+            delivery_method = dz.delivery_method
+            
+    return delivery_company, delivery_company_name, delivery_method

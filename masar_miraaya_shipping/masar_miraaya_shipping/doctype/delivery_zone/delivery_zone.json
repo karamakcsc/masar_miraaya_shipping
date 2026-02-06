@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "zone",
+  "delivery_method",
   "delivery_company",
   "delivery_company_name",
   "capacity",
@@ -78,12 +79,18 @@
    "fieldtype": "Table MultiSelect",
    "label": "Governorate",
    "options": "Governorate MultiSelect"
+  },
+  {
+   "fieldname": "delivery_method",
+   "fieldtype": "Select",
+   "label": "Delivery Method",
+   "options": "\nIn-House\nOutsourced"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-03 14:50:55.945993",
+ "modified": "2026-02-06 17:50:45.279634",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Delivery Zone",

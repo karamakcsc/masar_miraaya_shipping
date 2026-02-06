@@ -59,9 +59,9 @@
   },
   {
    "fieldname": "governorate",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Governorate",
-   "options": "Governorate",
+   "options": "Governorate MultiSelect",
    "reqd": 1
   },
   {
@@ -175,7 +175,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-03 16:01:54.914689",
+ "modified": "2026-02-06 17:16:21.867290",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print",
