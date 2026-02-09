@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"a5qg-2w-Vy\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Driver Page</span>\",\"col\":12}},{\"id\":\"H1DeJqny8c\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"5WlieuBws6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Driver Assignment\",\"col\":4}},{\"id\":\"e_XGMXYyOy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order Delivery\",\"col\":4}}]",
+ "content": "[{\"id\":\"a5qg-2w-Vy\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Driver Page</span>\",\"col\":12}},{\"id\":\"H1DeJqny8c\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"5WlieuBws6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Driver Assignment\",\"col\":4}},{\"id\":\"e_XGMXYyOy\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Order Delivery\",\"col\":4}},{\"id\":\"4bwmaE9bKJ\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"l6NUqM_xb_\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":4}}]",
  "creation": "2026-01-04 12:01:33.711682",
  "custom_blocks": [],
  "docstatus": 0,
@@ -12,8 +12,28 @@
  "indicator_color": "green",
  "is_hidden": 0,
  "label": "Driver Page",
- "links": [],
- "modified": "2026-01-20 11:07:57.877682",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Order Delivery Summary",
+   "link_count": 0,
+   "link_to": "Order Delivery Summary",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-02-08 16:39:03.804409",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Driver Page",
