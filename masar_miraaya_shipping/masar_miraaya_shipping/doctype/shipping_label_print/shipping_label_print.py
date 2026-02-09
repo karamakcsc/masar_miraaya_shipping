@@ -7,6 +7,7 @@ import base64
 from masar_miraaya.api import base_data, request_with_history
 from frappe.utils import now_datetime
 import json
+from pdf2image import convert_from_bytes
 
 
 class ShippingLabelPrint(Document):
@@ -147,6 +148,9 @@ class ShippingLabelPrint(Document):
             if order.pick_list:
                     pl_barcode = self.create_barcode(order.pick_list)
                     order.picklist_barcode = pl_barcode
+            if order.magento_id:
+                magento_barcode = self.create_barcode(order.magento_id)
+                order.magento_barcode = magento_barcode
             if order.delivery_method and order.delivery_method == "In-House":
                 expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
                 expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
@@ -162,11 +166,15 @@ class ShippingLabelPrint(Document):
                     if cont:
                         label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                         if label_pdf:
-                            create_label_attachment(label_pdf, self.doctype, self.name)
+                            base64_image = create_label_attachment(label_pdf, self.doctype, self.name)
+                            outsourced_label = f"data:image/png;base64,{base64_image}"
+                            order.outsourced_label = outsourced_label
                 elif expected_delivery_company_name and expected_delivery_company_name == order.delivery_company_name:
                     label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                     if label_pdf:
-                        create_label_attachment(label_pdf, self.doctype, self.name)
+                        base64_image = create_label_attachment(label_pdf, self.doctype, self.name)
+                        outsourced_label = f"data:image/png;base64,{base64_image}"
+                        order.outsourced_label = outsourced_label
                     
         self.save(ignore_permissions=True)
     
@@ -392,11 +400,21 @@ def create_label_attachment(label_response, doctype, docname):
     if not label_url:
         frappe.throw("Label URL not found in response.")
 
-    file_name = (
-        f"Shipping-Label-{label_response.get('order_id')}-"
-        f"{now_datetime().strftime('%Y%m%d%H%M%S')}.pdf"
+    pdf_res = request_with_history(
+        req_method="GET",
+        document=doctype,
+        doctype=docname,
+        url=label_url,
     )
 
+    if pdf_res.status_code != 200:
+        frappe.throw(f"Failed to fetch PDF content from {label_url}")
+
+    pdf_bytes = pdf_res.content
+
+    base64_image = pdf_to_base64_image(pdf_bytes)
+
+    file_name = f"Shipping-Label-{label_response.get('order_id')}-{now_datetime().strftime('%Y%m%d%H%M%S')}.pdf"
     file_doc = frappe.get_doc({
         "doctype": "File",
         "file_name": file_name,
@@ -405,10 +423,10 @@ def create_label_attachment(label_response, doctype, docname):
         "attached_to_doctype": doctype,
         "attached_to_name": docname
     })
-
     file_doc.save(ignore_permissions=True)
 
-    return file_doc.file_url
+    return base64_image
+
 
 def expected_delivery_company_map(expected_delivery_company):
     dc_map = {
@@ -438,3 +456,22 @@ def resolve_delivery_company(delivery_zone):
             delivery_method = dz.delivery_method
             
     return delivery_company, delivery_company_name, delivery_method
+
+def pdf_to_base64_image(pdf_bytes, page_number=0, image_format='PNG'):
+    try:
+        images = convert_from_bytes(pdf_bytes)
+
+        if not images:
+            return None
+
+        img = images[page_number]
+
+        buffer = io.BytesIO()
+        img.save(buffer, format=image_format)
+        buffer.seek(0)
+
+        return base64.b64encode(buffer.read()).decode('utf-8')
+
+    except Exception as e:
+        frappe.log_error(f"PDF to image conversion failed: {str(e)}")
+        return None

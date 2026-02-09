@@ -40,7 +40,6 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 						<th>Address</th>
 						<th>Delivery Company</th>
 						<th>Driver Name</th>
-						<th style="width:90px;">Action</th>
 					</tr>
 				</thead>
 				<tbody></tbody>
@@ -62,11 +61,6 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 					<td>${row.address_display || '-'}</td>
 					<td>${row.delivery_company}</td>
 					<td>${row.driver}</td>
-					<td>
-						<button class="btn btn-danger btn-xs remove-so" data-so="${so}">
-							Remove
-						</button>
-					</td>
 				</tr>
 			`);
 		});
@@ -121,11 +115,11 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 		$(this).val('');
 	});
 
-	$orders_container.on('click', '.remove-so', function() {
-		let so = $(this).data('so');
-		delete scanned_orders[so];
-		render_scanned_list();
-	});
+	// $orders_container.on('click', '.remove-so', function() {
+	// 	let so = $(this).data('so');
+	// 	delete scanned_orders[so];
+	// 	render_scanned_list();
+	// });
 
 	$orders_container.on('click', '.assign-driver-btn', function() {
 		let sales_orders = Object.keys(scanned_orders);
