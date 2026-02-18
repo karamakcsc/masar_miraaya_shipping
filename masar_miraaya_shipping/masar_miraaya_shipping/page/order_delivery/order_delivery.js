@@ -63,6 +63,13 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 		</div>
 	`).appendTo($container);
 
+	let $scan_button = $(`
+		<button class="btn btn-primary mt-2">
+			<i class="fa fa-camera"></i> Scan with Camera
+		</button>
+	`).appendTo($barcode_section);
+
+
 	let $orders_container = $('<div class="scanned-orders"></div>').appendTo($container);
 
 	let scanned_orders = {};
@@ -144,10 +151,7 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 		}
 	}
 
-	$barcode_section.find('.barcode-input').on('keypress', function(e) {
-		if (e.which !== 13) return;
-
-		let scanned_value = $(this).val().trim();
+	function handle_scan(scanned_value) {
 		if (!scanned_value) return;
 
 		if (scanned_orders[scanned_value]) {
@@ -155,7 +159,6 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 				message: __('Sales Order already scanned and dispatched'),
 				indicator: 'orange'
 			});
-			$(this).val('');
 			return;
 		}
 
@@ -178,7 +181,7 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 			});
 			return;
 		}
-		
+
 		const scan_errors = {
 			not_on_the_way: __('Sales Order is not On the Way'),
 			driver_mismatch: __('Sales Order is assigned to another driver'),
@@ -186,7 +189,7 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 			invalid_sales_order: __('Invalid Sales Order'),
 			already_delivered: __('Sales Order is already Delivered')
 		};
-		
+
 		frappe.call({
 			method: 'masar_miraaya_shipping.masar_miraaya_shipping.page.order_delivery.order_delivery.scan_and_set_delivered',
 			args: {
@@ -216,9 +219,29 @@ frappe.pages['order-delivery'].on_page_load = function(wrapper) {
 				render_scanned_list();
 			}
 		});
+	}
+
+	$barcode_section.find('.barcode-input').on('keypress', function(e) {
+		if (e.which !== 13) return;
+
+		let scanned_value = $(this).val().trim();
+		handle_scan(scanned_value);
 
 		$(this).val('');
 	});
+
+	$scan_button.on('click', function() {
+		new frappe.ui.Scanner({
+			dialog: true,
+			multiple: false,
+			on_scan(data) {
+				if (data && data.decodedText) {
+					handle_scan(data.decodedText);
+				}
+			}
+		});
+	});
+
 
 	function fetch_existing_orders() {
 		if (!driver.get_value()) return;

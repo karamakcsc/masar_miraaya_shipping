@@ -8,6 +8,7 @@ from masar_miraaya.api import base_data, request_with_history
 from frappe.utils import now_datetime
 import json
 from pdf2image import convert_from_bytes
+import re
 
 
 class ShippingLabelPrint(Document):
@@ -258,15 +259,24 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
         order["city"] = ""
         order["landmark"] = ""
         order["mobile_no"] = ""
-        order["district"] = order.get("custom_district", "")
+        order["district"] = ""
         order["delivery_zone"] = ""
 
+        if order.custom_magento_billing_address:
+            billing_text = order.custom_magento_billing_address
+            order["country"] = extract_value(billing_text, "Country")
+            order["city"] = extract_value(billing_text, "City")
+            order["district"] = extract_value(billing_text, "District")
+            order["mobile_no"] = extract_value(billing_text, "Phone")
+            
+            order["customer_name"] = extract_value(billing_text, "Customer Name")
         if order.customer_address:
             address_doc = frappe.get_doc("Address", order.customer_address)
-            order["address"] = address_doc.address_line1
-            order["city"] = address_doc.city
-            order["landmark"] = address_doc.address_title
-            order["mobile_no"] = address_doc.phone
+
+            order["address"] = order.get("city") or address_doc.address_line1
+            order["city"] = order.get("country") or address_doc.city
+            order["landmark"] = order.get("district") or address_doc.address_title
+            order["mobile_no"] = order.get("mobile_no") or address_doc.phone
 
         delivery_zone = get_delivery_zone_for_order(
             order.get("custom_governorate"),
@@ -475,3 +485,8 @@ def pdf_to_base64_image(pdf_bytes, page_number=0, image_format='PNG'):
     except Exception as e:
         frappe.log_error(f"PDF to image conversion failed: {str(e)}")
         return None
+    
+def extract_value(text, field):
+    pattern = rf"- {field}:\s*(.*)"
+    match = re.search(pattern, text)
+    return match.group(1).strip() if match else None
