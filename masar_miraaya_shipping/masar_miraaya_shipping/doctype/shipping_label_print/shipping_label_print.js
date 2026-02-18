@@ -151,6 +151,7 @@ function fetch_orders(frm) {
                             row.delivery_method = order.delivery_method || frm.doc.delivery_method;
                             row.delivery_company = order.delivery_company || frm.doc.delivery_company;
                             row.delivery_company_name = order.delivery_company_name || frm.doc.delivery_company_name;
+                            row.payment_method = order.payment_method;
                         });
                         
                         frm.refresh_field("orders");

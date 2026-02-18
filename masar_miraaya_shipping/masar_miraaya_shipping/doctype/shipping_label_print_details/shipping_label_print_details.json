@@ -11,6 +11,7 @@
   "magento_id",
   "customer",
   "customer_name",
+  "payment_method",
   "column_break_cvjw",
   "delivery_date",
   "total_qty",
@@ -380,13 +381,19 @@
    "fieldtype": "Image",
    "label": "Magento Image",
    "options": "magento_barcode"
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Data",
+   "label": "Payment Method",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-02-09 17:28:44.299207",
+ "modified": "2026-02-18 17:31:12.222593",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print Details",

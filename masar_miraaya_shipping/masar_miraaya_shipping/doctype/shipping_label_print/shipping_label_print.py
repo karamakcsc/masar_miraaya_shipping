@@ -249,7 +249,7 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
             "name", "customer", "customer_name", "delivery_date",
             "custom_delivery_time", "grand_total",
             "custom_governorate", "custom_district",
-            "total_qty", "customer_address", "custom_magento_id"
+            "total_qty", "customer_address", "custom_magento_id", "custom_is_cash_on_delivery", "custom_payment_channel_amount"
         ],
         order_by="custom_governorate, custom_district, name"
     )
@@ -261,6 +261,14 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
         order["mobile_no"] = ""
         order["district"] = ""
         order["delivery_zone"] = ""
+        order["payment_method"] = ""
+
+        if order.custom_is_cash_on_delivery and order.custom_payment_channel_amount:
+            order["payment_method"] = "Cash on Delivery / Prepaid"
+        elif order.custom_is_cash_on_delivery:
+            order["payment_method"] = "Cash on Delivery"
+        elif order.custom_payment_channel_amount:
+            order["payment_method"] = "Prepaid"
 
         if order.custom_magento_billing_address:
             billing_text = order.custom_magento_billing_address
