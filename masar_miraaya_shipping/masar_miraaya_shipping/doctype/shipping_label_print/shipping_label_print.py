@@ -1,7 +1,6 @@
 import frappe
 from frappe.model.document import Document
-import barcode
-from barcode.writer import ImageWriter
+import qrcode
 import io
 import base64
 from masar_miraaya.api import base_data, request_with_history
@@ -30,7 +29,7 @@ class ShippingLabelPrint(Document):
             frappe.throw("Please add at least one order to print shipping label.")
         if not self.printed_by:
             self.printed_by = frappe.session.user
-        self.generate_barcodes()
+        self.generate_qrcodes()
         self.print_status = "Printed"
         self.set_shipping_details_pl()
     
@@ -142,21 +141,21 @@ class ShippingLabelPrint(Document):
                 
                 pl_doc.save(ignore_permissions=True)
 
-    def generate_barcodes(self):
+    def generate_qrcodes(self):
         for order in self.orders:
             if not order.delivery_company or not order.delivery_company_name:
                     frappe.throw(f"Please set Delivery Company for Sales Order {order.sales_order} before printing the label.")
             if order.pick_list:
-                    pl_barcode = self.create_barcode(order.pick_list)
-                    order.picklist_barcode = pl_barcode
+                    pl_qrcode = self.create_qrcode(order.pick_list)
+                    order.picklist_barcode = pl_qrcode
             if order.magento_id:
-                magento_barcode = self.create_barcode(order.magento_id)
-                order.magento_barcode = magento_barcode
+                magento_qrcode = self.create_qrcode(order.magento_id)
+                order.magento_barcode = magento_qrcode
             if order.delivery_method and order.delivery_method == "In-House":
                 expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
                 expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
-                so_barcode = self.create_barcode(order.sales_order)
-                order.order_barcode = so_barcode
+                so_qrcode = self.create_qrcode(order.sales_order)
+                order.order_barcode = so_qrcode
                 if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
                     reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
             elif order.delivery_method and order.delivery_method == "Outsourced":
@@ -179,29 +178,29 @@ class ShippingLabelPrint(Document):
                     
         self.save(ignore_permissions=True)
     
-    def create_barcode(self, text):
+    def create_qrcode(self, text):
         try:
-            barcode_class = barcode.get_barcode_class('code128')
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
+                box_size=10,
+                border=4,
+            )
             
-            barcode_instance = barcode_class(text, writer=ImageWriter())
+            qr.add_data(text)
+            qr.make(fit=True)
+            
+            img = qr.make_image(fill_color="black", back_color="white")
             
             buffer = io.BytesIO()
-            barcode_instance.write(buffer, options={
-                'module_width': 0.2,
-                'module_height': 15.0,
-                'quiet_zone': 6.5,
-                'font_size': 10,
-                'text_distance': 5.0,
-                'write_text': True
-            })
-            
+            img.save(buffer, format='PNG')
             buffer.seek(0)
-            barcode_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+            qrcode_base64 = base64.b64encode(buffer.read()).decode('utf-8')
             
-            return f"data:image/png;base64,{barcode_base64}"
+            return f"data:image/png;base64,{qrcode_base64}"
         
         except Exception as e:
-            frappe.log_error(f"Barcode generation failed for {text}: {str(e)}")
+            frappe.log_error(f"QR code generation failed for {text}: {str(e)}")
             return None
         
     @frappe.whitelist()
