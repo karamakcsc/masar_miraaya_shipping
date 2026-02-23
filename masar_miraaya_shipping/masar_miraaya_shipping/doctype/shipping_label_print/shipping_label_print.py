@@ -183,7 +183,7 @@ class ShippingLabelPrint(Document):
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_M,
-                box_size=10,
+                box_size=15,
                 border=4,
             )
             

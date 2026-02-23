@@ -108,6 +108,7 @@ frappe.pages['packing'].on_page_load = function(wrapper) {
 				if (!r.message) return;
 
 				if (r.message.success) {
+					frappe.open_in_new_tab = true;
 					frappe.set_route('Form', 'Pick List', r.message.pick_list);
 				} else {
 					frappe.msgprint({
