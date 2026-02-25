@@ -4,13 +4,23 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-01-26 14:47:15.000509",
+ "modified": "2026-02-25 13:39:25.333317",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "order-delivery",
  "owner": "Administrator",
  "page_name": "order-delivery",
- "roles": [],
+ "roles": [
+  {
+   "role": "Driver"
+  },
+  {
+   "role": "Delivery User"
+  },
+  {
+   "role": "Delivery Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,

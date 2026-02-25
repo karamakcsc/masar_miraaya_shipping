@@ -1,7 +1,7 @@
 import frappe
 
 @frappe.whitelist()
-def scan_and_dispatch(sales_order, driver=None):
+def scan_and_dispatch(sales_order=None, driver=None):
 	so_name = sales_order
 
 	so = frappe.db.get_value(
@@ -65,7 +65,7 @@ def scan_and_dispatch(sales_order, driver=None):
 			"status": "error",
 			"reason": "driver_not_assigned"
 		}
-
+	
 	so_doc = frappe.get_doc("Sales Order", so_name)
 	so_doc.custom_driver = pick_list.custom_driver
 	so_doc.custom_delivery_company = pick_list.custom_delivery_company
@@ -76,7 +76,7 @@ def scan_and_dispatch(sales_order, driver=None):
 		SELECT
 			so.name AS sales_order,
 			so.custom_magento_id AS magento_id,
-            so.custom_magento_status AS magento_status,
+			so.custom_magento_status AS magento_status,
 			so.customer_name AS customer,
 			so.grand_total,
 			so.contact_phone,

@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": null,
- "modified": "2026-02-08 15:48:03.854821",
+ "modified": "2026-02-25 13:39:44.167871",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Order Delivery Summary",
@@ -43,6 +43,9 @@
   },
   {
    "role": "System Manager"
+  },
+  {
+   "role": "Driver"
   }
  ],
  "timeout": 0

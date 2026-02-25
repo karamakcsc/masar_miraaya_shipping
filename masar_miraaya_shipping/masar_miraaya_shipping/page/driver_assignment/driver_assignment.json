@@ -4,13 +4,23 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2026-01-26 14:47:34.261375",
+ "modified": "2026-02-25 13:39:00.851055",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "driver-assignment",
  "owner": "Administrator",
  "page_name": "driver-assignment",
- "roles": [],
+ "roles": [
+  {
+   "role": "Driver"
+  },
+  {
+   "role": "Delivery User"
+  },
+  {
+   "role": "Delivery Manager"
+  }
+ ],
  "script": null,
  "standard": "Yes",
  "style": null,
