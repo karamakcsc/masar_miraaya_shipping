@@ -8,6 +8,8 @@ requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = [
+    "pdf2image>=1.16.0",
+    "qrcode[pil]>=7.4.2"
     # "frappe~=15.0.0" # Installed and managed by bench.
 ]
 
