@@ -7,7 +7,7 @@ def validate(self, method):
     if not self.custom_picking_datetime and self.docstatus == 0:
         self.custom_picking_datetime = now_datetime()
 def on_submit(self, method):
-    validate_picked_qty(self)       
+    # validate_picked_qty(self)       
     stop_picking_timer(self)
 
 def validate_picked_qty(self):

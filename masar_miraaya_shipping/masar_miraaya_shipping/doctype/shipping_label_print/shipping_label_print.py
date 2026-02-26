@@ -116,8 +116,6 @@ class ShippingLabelPrint(Document):
         
         if existing_pl:
             return existing_pl[0].pick_list
-        else:
-            frappe.throw(f"Pick List not found for Sales Order {sales_order}.")
         return None
 
     def get_delivery_note(self, sales_order):
@@ -138,8 +136,11 @@ class ShippingLabelPrint(Document):
             if order.pick_list:
                 pl_doc = frappe.get_doc("Pick List", order.pick_list)
                 pl_doc.custom_delivery_zone = order.delivery_zone if order.delivery_zone else ""                
-                
                 pl_doc.save(ignore_permissions=True)
+            if order.sales_order:
+                so_doc = frappe.get_doc("Sales Order", order.sales_order)
+                so_doc.custom_delivery_zone = order.delivery_zone if order.delivery_zone else ""
+                so_doc.save(ignore_permissions=True)
 
     def generate_qrcodes(self):
         for order in self.orders:

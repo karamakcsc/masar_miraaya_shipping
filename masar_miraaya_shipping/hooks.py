@@ -267,7 +267,10 @@ fixtures = [
                 "Pick List-custom_driver_name",
                 "Pick List-custom_packaging_items",
                 "Pick List-custom_column_break_skt6f",
-                "Pick List-custom_district"
+                "Pick List-custom_district",
+                "Sales Order-custom_delivery_zone",
+                "Pick List-custom_scan_packaging_barcode",
+                "Pick List-custom_section_break_ai4bs"
             ]
         ]
     ]}

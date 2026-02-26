@@ -40,3 +40,77 @@ function start_packing_timer(frm) {
         }
     });
 }
+
+frappe.ui.form.on('Pick List', {
+
+    refresh(frm) {
+        if (frm.fields_dict.custom_scan_packaging_barcode) {
+            frm.fields_dict.custom_scan_packaging_barcode.$input.on("keypress", function(e) {
+                if (e.which === 13) {
+                    frm.trigger("custom_scan_packaging_barcode");
+                }
+            });
+        }
+    },
+
+    custom_scan_packaging_barcode(frm) {
+
+        if (!frm.doc.custom_scan_packaging_barcode) return;
+
+        let barcode = frm.doc.custom_scan_packaging_barcode;
+
+        frappe.db.get_value("Item", { name: barcode }, ["name", "item_name"])
+            .then(r => {
+
+                if (r.message) {
+                    process_item(frm, r.message.name, r.message.item_name);
+                    return;
+                }
+
+                frappe.db.get_value("Item Barcode", { barcode: barcode }, "parent")
+                    .then(res => {
+
+                        if (!res.message) {
+                            frappe.msgprint("Barcode not found");
+                            frm.set_value("custom_scan_packaging_barcode", "");
+                            return;
+                        }
+
+                        let item_code = res.message.parent;
+
+                        frappe.db.get_value("Item", item_code, ["name", "item_name"])
+                            .then(item => {
+                                process_item(frm, item.message.name, item.message.item_name);
+                            });
+                    });
+            });
+    }
+});
+
+
+function process_item(frm, item_code, item_name) {
+
+    let existing = frm.doc.custom_packaging_items.find(d => d.item_code === item_code);
+
+    if (existing) {
+        frappe.show_alert({
+            message: `${item_name} already added`,
+            indicator: "orange"
+        });
+    } else {
+
+        let child = frm.add_child("custom_packaging_items");
+
+        child.item_code = item_code;
+        child.item_name = item_name;
+
+        frm.refresh_field("custom_packaging_items");
+
+        frappe.show_alert({
+            message: `${item_name} added`,
+            indicator: "green"
+        });
+    }
+
+    frm.set_value("custom_scan_packaging_barcode", "");
+}
