@@ -477,7 +477,7 @@ def resolve_delivery_company(delivery_zone):
 
 def pdf_to_base64_image(pdf_bytes, page_number=0, image_format='PNG'):
     try:
-        images = convert_from_bytes(pdf_bytes)
+        images = convert_from_bytes(pdf_bytes, dpi=300)
 
         if not images:
             return None
