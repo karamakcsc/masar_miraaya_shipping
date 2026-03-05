@@ -249,7 +249,8 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
             "name", "customer", "customer_name", "delivery_date",
             "custom_delivery_time", "grand_total",
             "custom_governorate", "custom_district",
-            "total_qty", "customer_address", "custom_magento_id", "custom_is_cash_on_delivery", "custom_payment_channel_amount"
+            "total_qty", "customer_address", "custom_magento_id", "custom_is_cash_on_delivery", "custom_payment_channel_amount",
+            "custom_magento_billing_address", "contact_mobile"
         ],
         order_by="custom_governorate, custom_district, name"
     )
@@ -275,16 +276,18 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
             order["country"] = extract_value(billing_text, "Country")
             order["city"] = extract_value(billing_text, "City")
             order["district"] = extract_value(billing_text, "District")
+            order["landmark"] = extract_value(billing_text, "Landmark")
+            order["address"] = extract_value(billing_text, "Address")
             order["mobile_no"] = extract_value(billing_text, "Phone")
             
             order["customer_name"] = extract_value(billing_text, "Customer Name")
         if order.customer_address:
             address_doc = frappe.get_doc("Address", order.customer_address)
 
-            order["address"] = order.get("city") or address_doc.address_line1
-            order["city"] = order.get("country") or address_doc.city
-            order["landmark"] = order.get("district") or address_doc.address_title
-            order["mobile_no"] = order.get("mobile_no") or address_doc.phone
+            order["address"] = order.get("address") or address_doc.address_line1
+            order["city"] = order.get("city") or address_doc.city
+            order["landmark"] = order.get("landmark") or address_doc.address_title
+            order["mobile_no"] = order.get("mobile_no") or order.contact_mobile
 
         delivery_zone = get_delivery_zone_for_order(
             order.get("custom_governorate"),

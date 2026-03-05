@@ -87,7 +87,7 @@ function print_labels(frm) {
                             if (!r.exc) {
 
                                 const base_url = window.location.origin;
-                                const print_format = "Shipping Label Print";
+                                const print_format = frm.doc.print_format || "Shipping Label Print";
 
                                 const url =
                                     `${base_url}/printview` +

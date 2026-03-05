@@ -22,6 +22,7 @@
   "orders",
   "total_orders",
   "section_break_vpnu",
+  "print_format",
   "print_status",
   "column_break_bufb",
   "printed_by",
@@ -169,13 +170,21 @@
    "fieldtype": "Data",
    "label": "Delivery Company Name",
    "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "print_format",
+   "fieldtype": "Link",
+   "label": "Print Format",
+   "link_filters": "[[\"Print Format\",\"doc_type\",\"=\",\"Shipping Label Print\"]]",
+   "options": "Print Format"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-02-06 17:16:21.867290",
+ "modified": "2026-03-05 02:55:46.423911",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print",
