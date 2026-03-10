@@ -13,16 +13,30 @@ import re
 class ShippingLabelPrint(Document):
     def validate(self):
         self.total_orders = len(self.orders)
+        
+        so_names = [o.sales_order for o in self.orders if o.sales_order]
+        so_data = {}
+        if so_names:
+            rows = frappe.get_all(
+                "Sales Order",
+                filters={"name": ["in", so_names]},
+                fields=["name", "custom_governorate", "custom_district"]
+            )
+            so_data = {r.name: r for r in rows}
+        
         for order in self.orders:
-            self.set_location_details(order)           
+            if order.sales_order and order.sales_order in so_data:
+                so = so_data[order.sales_order]
+                if so.custom_governorate:
+                    order.governorate = so.custom_governorate
+                if so.custom_district:
+                    order.district = so.custom_district
+            
             self.auto_assign_delivery_zone(order)
             
-            picklist_no = self.get_picklist(order.sales_order)
-            dn_no = self.get_delivery_note(order.sales_order)
-            if picklist_no:
-                order.pick_list = picklist_no
-            if dn_no:
-                order.delivery_note = dn_no
+            # picklist_no = self.get_picklist(order.sales_order)
+            # if picklist_no:
+            #     order.pick_list = picklist_no
     
     def on_submit(self):
         if not self.orders:
@@ -30,13 +44,12 @@ class ShippingLabelPrint(Document):
         if not self.printed_by:
             self.printed_by = frappe.session.user
         self.print_status = "Queued"
-        self.set_shipping_details_pl()
         frappe.enqueue_doc(
             self.doctype,
             self.name,
             "generate_qrcodes",
             queue="long",
-            timeout=900
+            timeout=3000
         )
     
     def on_cancel(self):
@@ -110,66 +123,74 @@ class ShippingLabelPrint(Document):
                 f"Please create a delivery zone for this location."
             )
             
-    def get_picklist(self, sales_order):
-        existing_pl = frappe.db.sql("""
-            SELECT DISTINCT tpli.parent AS pick_list
-            FROM `tabPick List Item` tpli
-            INNER JOIN `tabSales Order` tso ON tpli.sales_order = tso.name
-            INNER JOIN `tabPick List` tpl ON tpli.parent = tpl.name
-            WHERE tso.name = %s
-            GROUP BY tpli.parent
-        """,(sales_order,), as_dict=True)
+    # def get_picklist(self, sales_order):
+    #     existing_pl = frappe.db.sql("""
+    #         SELECT DISTINCT tpli.parent AS pick_list
+    #         FROM `tabPick List Item` tpli
+    #         INNER JOIN `tabSales Order` tso ON tpli.sales_order = tso.name
+    #         INNER JOIN `tabPick List` tpl ON tpli.parent = tpl.name
+    #         WHERE tso.name = %s
+    #         GROUP BY tpli.parent
+    #     """,(sales_order,), as_dict=True)
         
-        if existing_pl:
-            return existing_pl[0].pick_list
-        return None
-
-    def get_delivery_note(self, sales_order):
-        existing_dn = frappe.db.sql("""
-            SELECT DISTINCT tdn.name 
-            FROM `tabDelivery Note` tdn 
-            INNER JOIN `tabDelivery Note Item` tdni ON tdn.name = tdni.parent 
-            WHERE tdni.against_sales_order = %s
-            GROUP BY tdn.name
-        """, sales_order, as_dict=True)
-        
-        if existing_dn:
-            return existing_dn[0].name
-        return None
+    #     if existing_pl:
+    #         return existing_pl[0].pick_list
+    #     return None
     
     def set_shipping_details_pl(self):
+        # pl_updates = {}
+        so_updates = {}
+        
         for order in self.orders:
-            if order.pick_list:
-                pl_doc = frappe.get_doc("Pick List", order.pick_list)
-                pl_doc.custom_delivery_zone = order.delivery_zone if order.delivery_zone else ""                
-                pl_doc.save(ignore_permissions=True)
+            zone = order.delivery_zone or ""
+            # if order.pick_list:
+            #     pl_updates[order.pick_list] = zone
             if order.sales_order:
-                so_doc = frappe.get_doc("Sales Order", order.sales_order)
-                so_doc.custom_delivery_zone = order.delivery_zone if order.delivery_zone else ""
-                so_doc.save(ignore_permissions=True)
+                so_updates[order.sales_order] = zone
+        
+        # for pl_name, zone in pl_updates.items():
+        #     frappe.db.set_value("Pick List", pl_name, "custom_delivery_zone", zone)
+        
+        for so_name, zone in so_updates.items():
+            frappe.db.set_value("Sales Order", so_name, "custom_delivery_zone", zone)
+        
+        frappe.db.commit()
 
     def generate_qrcodes(self):
         try:
+            self.set_shipping_details_pl()
+            sales_orders = [o.sales_order for o in self.orders]
+
+            so_data = frappe.get_all(
+                "Sales Order",
+                filters={"name": ["in", sales_orders]},
+                fields=["name", "custom_expected_delivery_company", "custom_expected_dc_id"]
+            )
+
+            so_map = {d.name: d for d in so_data}
             for order in self.orders:
                 if not order.delivery_company or not order.delivery_company_name:
-                        frappe.throw(f"Please set Delivery Company for Sales Order {order.sales_order} before printing the label.")
-                if order.pick_list:
-                        pl_qrcode = self.create_qrcode(order.pick_list)
-                        order.picklist_barcode = pl_qrcode
+                    frappe.throw(f"Please set Delivery Company for Sales Order {order.sales_order} before printing the label.")
+                # if order.pick_list:
+                #     pl_qrcode = self.create_qrcode(order.pick_list)
+                #     order.picklist_barcode = pl_qrcode
                 if order.magento_id:
                     magento_qrcode = self.create_qrcode(order.magento_id)
                     order.magento_barcode = magento_qrcode
+
+                so_values = so_map.get(order.sales_order)
+                
+                expected_delivery_company_name = expected_delivery_company_map(so_values.custom_expected_delivery_company)
+                expected_dc_name = so_values.custom_expected_dc_id or expected_delivery_company_name
+                
                 if order.delivery_method and order.delivery_method == "In-House":
-                    expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
-                    expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
                     so_qrcode = self.create_qrcode(order.sales_order)
                     order.order_barcode = so_qrcode
-                    if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
+                    if expected_dc_name and expected_dc_name != order.delivery_company_name:
                         reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
+
                 elif order.delivery_method and order.delivery_method == "Outsourced":
-                    expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
-                    expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
-                    if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
+                    if expected_dc_name and expected_dc_name != order.delivery_company_name:
                         cont = reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
                         if cont:
                             label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
@@ -177,12 +198,14 @@ class ShippingLabelPrint(Document):
                                 base64_image = create_label_attachment(label_pdf, self.doctype, self.name)
                                 outsourced_label = f"data:image/png;base64,{base64_image}"
                                 order.outsourced_label = outsourced_label
-                    elif expected_delivery_company_name and expected_delivery_company_name == order.delivery_company_name:
+
+                    elif expected_dc_name and expected_dc_name == order.delivery_company_name:
                         label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                         if label_pdf:
                             base64_image = create_label_attachment(label_pdf, self.doctype, self.name)
                             outsourced_label = f"data:image/png;base64,{base64_image}"
                             order.outsourced_label = outsourced_label
+
             self.print_status = "Printed"
         except Exception:
             frappe.log_error(frappe.get_traceback(), "Shipping Label QR Generation Failed")
