@@ -29,9 +29,15 @@ class ShippingLabelPrint(Document):
             frappe.throw("Please add at least one order to print shipping label.")
         if not self.printed_by:
             self.printed_by = frappe.session.user
-        self.generate_qrcodes()
-        self.print_status = "Printed"
+        self.print_status = "Queued"
         self.set_shipping_details_pl()
+        frappe.enqueue_doc(
+            self.doctype,
+            self.name,
+            "generate_qrcodes",
+            queue="long",
+            timeout=900
+        )
     
     def on_cancel(self):
         self.print_status = "Cancelled"
@@ -143,40 +149,44 @@ class ShippingLabelPrint(Document):
                 so_doc.save(ignore_permissions=True)
 
     def generate_qrcodes(self):
-        for order in self.orders:
-            if not order.delivery_company or not order.delivery_company_name:
-                    frappe.throw(f"Please set Delivery Company for Sales Order {order.sales_order} before printing the label.")
-            if order.pick_list:
-                    pl_qrcode = self.create_qrcode(order.pick_list)
-                    order.picklist_barcode = pl_qrcode
-            if order.magento_id:
-                magento_qrcode = self.create_qrcode(order.magento_id)
-                order.magento_barcode = magento_qrcode
-            if order.delivery_method and order.delivery_method == "In-House":
-                expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
-                expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
-                so_qrcode = self.create_qrcode(order.sales_order)
-                order.order_barcode = so_qrcode
-                if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
-                    reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
-            elif order.delivery_method and order.delivery_method == "Outsourced":
-                expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
-                expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
-                if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
-                    cont = reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
-                    if cont:
+        try:
+            for order in self.orders:
+                if not order.delivery_company or not order.delivery_company_name:
+                        frappe.throw(f"Please set Delivery Company for Sales Order {order.sales_order} before printing the label.")
+                if order.pick_list:
+                        pl_qrcode = self.create_qrcode(order.pick_list)
+                        order.picklist_barcode = pl_qrcode
+                if order.magento_id:
+                    magento_qrcode = self.create_qrcode(order.magento_id)
+                    order.magento_barcode = magento_qrcode
+                if order.delivery_method and order.delivery_method == "In-House":
+                    expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
+                    expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
+                    so_qrcode = self.create_qrcode(order.sales_order)
+                    order.order_barcode = so_qrcode
+                    if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
+                        reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
+                elif order.delivery_method and order.delivery_method == "Outsourced":
+                    expected_delivery_company = frappe.db.get_value("Sales Order", order.sales_order, "custom_expected_delivery_company")
+                    expected_delivery_company_name = expected_delivery_company_map(expected_delivery_company)
+                    if expected_delivery_company_name and expected_delivery_company_name != order.delivery_company_name:
+                        cont = reassign_delivery_company(order.magento_id, order.delivery_company, self.doctype, self.name)
+                        if cont:
+                            label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
+                            if label_pdf:
+                                base64_image = create_label_attachment(label_pdf, self.doctype, self.name)
+                                outsourced_label = f"data:image/png;base64,{base64_image}"
+                                order.outsourced_label = outsourced_label
+                    elif expected_delivery_company_name and expected_delivery_company_name == order.delivery_company_name:
                         label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
                         if label_pdf:
                             base64_image = create_label_attachment(label_pdf, self.doctype, self.name)
                             outsourced_label = f"data:image/png;base64,{base64_image}"
                             order.outsourced_label = outsourced_label
-                elif expected_delivery_company_name and expected_delivery_company_name == order.delivery_company_name:
-                    label_pdf = get_shipping_label(order.magento_id, self.doctype, self.name)
-                    if label_pdf:
-                        base64_image = create_label_attachment(label_pdf, self.doctype, self.name)
-                        outsourced_label = f"data:image/png;base64,{base64_image}"
-                        order.outsourced_label = outsourced_label
-                    
+            self.print_status = "Printed"
+        except Exception:
+            frappe.log_error(frappe.get_traceback(), "Shipping Label QR Generation Failed")
+            self.print_status = "Failed"
         self.save(ignore_permissions=True)
     
     def create_qrcode(self, text):
@@ -480,7 +490,7 @@ def resolve_delivery_company(delivery_zone):
 
 def pdf_to_base64_image(pdf_bytes, page_number=0, image_format='PNG'):
     try:
-        images = convert_from_bytes(pdf_bytes, dpi=300)
+        images = convert_from_bytes(pdf_bytes, dpi=200)
 
         if not images:
             return None
