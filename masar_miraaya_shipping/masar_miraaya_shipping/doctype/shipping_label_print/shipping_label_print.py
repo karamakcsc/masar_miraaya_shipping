@@ -153,8 +153,6 @@ class ShippingLabelPrint(Document):
         
         for so_name, zone in so_updates.items():
             frappe.db.set_value("Sales Order", so_name, "custom_delivery_zone", zone)
-        
-        frappe.db.commit()
 
     def generate_qrcodes(self):
         try:
@@ -211,6 +209,7 @@ class ShippingLabelPrint(Document):
         except Exception:
             frappe.log_error(frappe.get_traceback(), "Shipping Label QR Generation Failed")
             self.print_status = "Failed"
+        self.flags.ignore_version = True
         self.save(ignore_permissions=True)
     
     def create_qrcode(self, text):
