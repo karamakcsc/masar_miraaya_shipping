@@ -158,6 +158,7 @@ class ShippingLabelPrint(Document):
 
     def generate_qrcodes(self):
         try:
+            self.reload()
             self.set_shipping_details_pl()
             sales_orders = [o.sales_order for o in self.orders]
 
