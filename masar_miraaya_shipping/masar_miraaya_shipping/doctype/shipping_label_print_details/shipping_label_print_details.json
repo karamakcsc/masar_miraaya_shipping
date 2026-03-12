@@ -40,8 +40,6 @@
   "column_break_honx",
   "barcode_active",
   "section_break_hiue",
-  "picklist_barcode",
-  "picklist_image",
   "column_break_nnde",
   "order_barcode",
   "order_image",
@@ -263,20 +261,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "picklist_barcode",
-   "fieldtype": "Long Text",
-   "hidden": 1,
-   "label": "Picklist Barcode",
-   "read_only": 1
-  },
-  {
-   "fieldname": "picklist_image",
-   "fieldtype": "Image",
-   "label": "Picklist Image",
-   "options": "picklist_barcode"
-  },
-  {
    "fieldname": "column_break_nnde",
    "fieldtype": "Column Break"
   },
@@ -384,7 +368,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-03-10 13:03:31.802106",
+ "modified": "2026-03-11 11:09:06.122327",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print Details",

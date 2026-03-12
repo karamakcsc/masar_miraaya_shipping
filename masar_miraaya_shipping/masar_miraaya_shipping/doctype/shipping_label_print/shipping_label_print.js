@@ -6,6 +6,19 @@ frappe.ui.form.on("Shipping Label Print", {
         hide_buttons(frm);
         print_labels(frm);
         fetch_orders(frm);
+
+        if (frm.doc.docstatus === 1) {
+            if (["Queued"].includes(frm.doc.print_status)) {
+                show_progress_indicator(frm);
+                start_polling(frm);
+            } else if (["Printed", "Reprinted"].includes(frm.doc.print_status)) {
+                print_labels(frm);
+            } else if (frm.doc.print_status === "Failed") {
+                frm.dashboard.set_headline(
+                    __('<span style="color:red;">Label generation failed. Check Error Log.</span>')
+                );
+            }
+        }
     },
     onload: function(frm) {
         hide_buttons(frm);
@@ -27,6 +40,12 @@ frappe.ui.form.on("Shipping Label Print", {
                 order.delivery_company_name = frm.doc.delivery_company_name;
             });
             frm.refresh_field("orders");
+        }
+    },
+    before_load: function(frm) {
+        if (frm._poll_interval) {
+            clearInterval(frm._poll_interval);
+            frm._poll_interval = null;
         }
     }
 });
@@ -186,4 +205,35 @@ function show_grouping_message(frm, grouped_orders, zones) {
         message: message,
         indicator: 'green'
     });
+}
+
+function show_progress_indicator(frm) {
+    frm.dashboard.set_headline(
+        __('<span style="color:orange;">⏳ Generating labels... Please wait.</span>')
+    );
+    // Disable the area so user can't accidentally trigger actions
+    frm.disable_save();
+}
+
+function start_polling(frm) {
+    if (frm._poll_interval) clearInterval(frm._poll_interval);
+
+    frm._poll_interval = setInterval(() => {
+        frappe.xcall(
+            "frappe.client.get_value",
+            {
+                doctype: frm.doc.doctype,
+                filters: { name: frm.doc.name },
+                fieldname: "print_status"
+            }
+        ).then(r => {
+            if (!r || !r.print_status) return;
+
+            if (r.print_status !== "Queued") {
+                clearInterval(frm._poll_interval);
+                frm._poll_interval = null;
+                frm.reload_doc(); // reload to get fresh data + re-trigger refresh
+            }
+        });
+    }, 2000); // check every 2 seconds
 }

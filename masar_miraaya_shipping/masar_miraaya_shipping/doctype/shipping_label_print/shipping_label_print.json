@@ -95,7 +95,8 @@
    "fieldname": "print_status",
    "fieldtype": "Select",
    "label": "Print Status",
-   "options": "\nDraft\nQueued\nProcessing\nPrinted\nReprinted\nCancelled",
+   "no_copy": 1,
+   "options": "\nDraft\nQueued\nProcessing\nPrinted\nReprinted\nFailed\nCancelled",
    "read_only": 1
   },
   {
@@ -107,6 +108,7 @@
    "fieldname": "printed_by",
    "fieldtype": "Link",
    "label": "Printed By",
+   "no_copy": 1,
    "options": "User",
    "read_only": 1
   },
@@ -184,7 +186,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-10 13:10:15.332339",
+ "modified": "2026-03-11 11:19:06.987020",
  "modified_by": "Administrator",
  "module": "Masar Miraaya Shipping",
  "name": "Shipping Label Print",
