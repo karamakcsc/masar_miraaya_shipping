@@ -101,6 +101,11 @@ function print_labels(frm) {
                     frappe.call({
                         doc: frm.doc,
                         method: "mark_as_printed",
+                        // args: {
+                        //     dt: frm.doc.doctype,
+                        //     dn: frm.doc.name,
+                        //     method: "mark_as_printed"
+                        // },
                         freeze: true,
                         callback: function (r) {
                             if (!r.exc) {
