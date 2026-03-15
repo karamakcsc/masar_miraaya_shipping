@@ -841,12 +841,10 @@ class ShippingLabelPrint(Document):
             order.print_count   = (order.print_count or 0) + 1
 
         if self.print_status == "Printed":
-            self.print_status = "Reprinted"
+            frappe.db.set_value(self.doctype, self.name, "print_status", "Reprinted", update_modified=False)
         else:
-            self.print_status = "Printed"
-
-        self.flags.ignore_version = True
-        self.save()
+            frappe.db.set_value(self.doctype, self.name, "print_status", "Printed", update_modified=False)
+        
         return True
 
 
@@ -1082,19 +1080,19 @@ def create_label_attachment(label_response, doctype, docname):
 
     base64_image = pdf_to_base64_image(pdf_res.content)
 
-    file_name = (
-        f"Shipping-Label-{label_response.get('order_id')}"
-        f"-{now_datetime().strftime('%Y%m%d%H%M%S')}.pdf"
-    )
-    file_doc = frappe.get_doc({
-        "doctype":              "File",
-        "file_name":            file_name,
-        "file_url":             label_url,
-        "is_private":           0,
-        "attached_to_doctype":  doctype,
-        "attached_to_name":     docname,
-    })
-    file_doc.save(ignore_permissions=True)
+    # file_name = (
+    #     f"Shipping-Label-{label_response.get('order_id')}"
+    #     f"-{now_datetime().strftime('%Y%m%d%H%M%S')}.pdf"
+    # )
+    # file_doc = frappe.get_doc({
+    #     "doctype":              "File",
+    #     "file_name":            file_name,
+    #     "file_url":             label_url,
+    #     "is_private":           0,
+    #     "attached_to_doctype":  doctype,
+    #     "attached_to_name":     docname,
+    # })
+    # file_doc.save(ignore_permissions=True)
 
     return base64_image
 
