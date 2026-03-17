@@ -150,7 +150,7 @@ doc_events = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
 # 	"all": [
 # 		"masar_miraaya_shipping.tasks.all"
 # 	],
@@ -166,7 +166,12 @@ doc_events = {
 # 	"monthly": [
 # 		"masar_miraaya_shipping.tasks.monthly"
 # 	],
-# }
+    "cron": {
+            "*/30 * * * *": [
+                "masar_miraaya_shipping.jobs.scheduled_label_fetch.fetch_and_store_labels"
+            ]
+        }
+}
 
 # Testing
 # -------

@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-03-17 11:42:17.261332",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_order",
+  "magento_id",
+  "status",
+  "fetched_at",
+  "failure_reason",
+  "section_break_qhzs",
+  "base64_image",
+  "label_url",
+  "label_image",
+  "section_break_6hku",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_6hku",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Shipping Label Image",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order"
+  },
+  {
+   "fetch_from": "sales_order.custom_magento_id",
+   "fetch_if_empty": 1,
+   "fieldname": "magento_id",
+   "fieldtype": "Data",
+   "label": "Magento ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "label_image",
+   "fieldtype": "Image",
+   "label": "Label Image",
+   "options": "base64_image"
+  },
+  {
+   "fieldname": "section_break_qhzs",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nPending\nProcessing\nCompleted\nFailed",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fetched_at",
+   "fieldtype": "Datetime",
+   "label": "Fetched At"
+  },
+  {
+   "fieldname": "failure_reason",
+   "fieldtype": "Small Text",
+   "label": "Failure Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "base64_image",
+   "fieldtype": "Long Text",
+   "label": "Label Data",
+   "read_only": 1
+  },
+  {
+   "fieldname": "label_url",
+   "fieldtype": "Data",
+   "label": "Label URL",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-03-17 13:07:58.765304",
+ "modified_by": "Administrator",
+ "module": "Masar Miraaya Shipping",
+ "name": "Shipping Label Image",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

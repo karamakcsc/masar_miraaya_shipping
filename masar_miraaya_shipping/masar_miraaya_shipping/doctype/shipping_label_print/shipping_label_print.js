@@ -214,7 +214,7 @@ function show_grouping_message(frm, grouped_orders, zones) {
 
 function show_progress_indicator(frm) {
     frm.dashboard.set_headline(
-        __('<span style="color:orange;">⏳ Generating labels... Please wait.</span>')
+        __('<span style="color:orange;">⏳ Generating labels... Please wait. Do not refresh wait for the message to disappear.</span>')
     );
     // Disable the area so user can't accidentally trigger actions
     frm.disable_save();
