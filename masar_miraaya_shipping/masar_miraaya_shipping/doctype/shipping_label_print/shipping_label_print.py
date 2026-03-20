@@ -126,6 +126,7 @@ class ShippingLabelPrint(Document):
 
         # Copy governorate / district from SO onto each order row
         for order in self.orders:
+            
             if order.sales_order and order.sales_order in so_data:
                 so = so_data[order.sales_order]
                 if so.custom_governorate:
@@ -213,7 +214,7 @@ class ShippingLabelPrint(Document):
     def generate_qrcodes(self):
         try:
             # Always reload from DB first — this runs in a background queue
-            
+            self.reload()
             self.set_shipping_details_pl()
 
             # Batch-fetch expected delivery company fields (one query)
@@ -320,9 +321,26 @@ class ShippingLabelPrint(Document):
             )
             self.print_status = "Failed"
         
-        self.flags.ignore_version = True
-        self.flags.ignore_validate_update_after_submit = True
-        self.save(ignore_permissions=True)
+        frappe.db.set_value(
+            self.doctype, self.name, "print_status", self.print_status,
+            update_modified=False
+        )
+
+        # Write child table rows (barcodes, outsourced_label, etc.) directly
+        for order in self.orders:
+            if order.name:  # child row must already exist in DB
+                frappe.db.set_value(
+                    "Shipping Label Print Details",  # your child doctype name
+                    order.name,
+                    {
+                        "magento_barcode":   order.magento_barcode,
+                        "order_barcode":     order.order_barcode,
+                        "outsourced_label":  order.outsourced_label,
+                    },
+                    update_modified=False
+                )
+
+        frappe.db.commit()
 
     # ------------------------------------------------------------------
     # create_qrcode
@@ -485,7 +503,7 @@ def get_filtered_orders(delivery_date, delivery_time, governorate, order_status)
             order["city"]          = _extract_billing(billing_text, "City") or ""
             order["district"]      = _extract_billing(billing_text, "District") or ""
             order["landmark"]      = _extract_billing(billing_text, "Landmark") or ""
-            order["address"]       = _extract_billing(billing_text, "Address") or ""
+            order["address"]       = order.custom_district or _extract_billing(billing_text, "Address") or ""
             order["mobile_no"]     = _extract_billing(billing_text, "Phone") or ""
             order["customer_name"] = (
                 _extract_billing(billing_text, "Customer Name")
@@ -627,6 +645,7 @@ def expected_delivery_company_map(expected_delivery_company):
         "Fleetroot": "Miraaya fleet",
         "Sandoog":   "SANDOOK",
         "Boxy":      "BOXY",
+        "Aramex":    "Aramex",
     }.get(expected_delivery_company)
 
 
